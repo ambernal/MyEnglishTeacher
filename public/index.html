@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Trainer | C1 Mastery</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Configuración personalizada de Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.6s ease-out forwards',
+                        'slide-up': 'slideUp 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            /* Light, clean background */
+            background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+            background-attachment: fixed;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Elevated "Paper" card style */
+        .clean-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+
+        .input-clean {
+            background: white;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
+        }
+
+        .input-clean:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+            outline: none;
+        }
+
+        /* Spinner */
+        .loader {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e2e8f0;
+            border-bottom-color: #6366f1;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body class="text-slate-600 min-h-screen flex flex-col items-center py-10 px-4 sm:px-6">
+
+    <!-- App Container -->
+    <div class="w-full max-w-5xl relative">
+
+        <!-- Header -->
+        <header class="mb-12 text-center animate-fade-in">
+            <div
+                class="inline-flex items-center gap-2 mb-4 px-4 py-1.5 rounded-full bg-white border border-slate-200 shadow-sm text-brand-600 text-sm font-semibold tracking-wide uppercase">
+                <i data-lucide="zap" class="w-4 h-4 fill-current"></i>
+                <span>C1 Mastery</span>
+            </div>
+            <h1 class="font-display text-4xl md:text-5xl font-bold text-slate-900 mb-3 tracking-tight">
+                English <span class="text-brand-600">Trainer</span>
+            </h1>
+            <p class="text-slate-500 text-lg max-w-xl mx-auto">
+                Transforma tus notas de Notion en ejercicios de alto nivel.
+            </p>
+
+            <!-- Stepper (Solo visible en la Sección 1) -->
+            <div id="stepper-container"
+                class="mt-8 flex justify-center items-center gap-4 max-w-md mx-auto select-none hidden">
+                <!-- Step 1 -->
+                <div class="flex flex-col items-center gap-2 step-item active" data-step="1">
+                    <div
+                        class="w-10 h-10 rounded-full flex items-center justify-center bg-brand-600 text-white font-bold shadow-lg shadow-brand-500/30 transition-all duration-300">
+                        1
+                    </div>
+                    <span class="text-xs font-bold text-brand-600 uppercase tracking-wider">Topic</span>
+                </div>
+                <!-- Line -->
+                <div class="h-[2px] w-12 bg-slate-200 rounded transition-colors duration-300" id="line-1"></div>
+                <!-- Step 2 -->
+                <div class="flex flex-col items-center gap-2 step-item opacity-40 grayscale" data-step="2">
+                    <div
+                        class="w-10 h-10 rounded-full flex items-center justify-center bg-white border-2 border-slate-200 text-slate-400 font-bold transition-all duration-300">
+                        2
+                    </div>
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Practice</span>
+                </div>
+                <!-- Line -->
+                <div class="h-[2px] w-12 bg-slate-200 rounded transition-colors duration-300" id="line-2"></div>
+                <!-- Step 3 -->
+                <div class="flex flex-col items-center gap-2 step-item opacity-40 grayscale" data-step="3">
+                    <div
+                        class="w-10 h-10 rounded-full flex items-center justify-center bg-white border-2 border-slate-200 text-slate-400 font-bold transition-all duration-300">
+                        3
+                    </div>
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Feedback</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="relative w-full">
+
+            <!-- MENU PRINCIPAL -->
+            <section id="main-menu-section" class="clean-card rounded-3xl p-8 md:p-10 animate-slide-up">
+                <h2 class="font-display text-2xl md:text-3xl font-bold text-slate-900 mb-2">
+                    Elige tu Sesión de Práctica
+                </h2>
+                <p class="text-slate-500 mb-8">Selecciona el área en la que quieres enfocarte hoy para alcanzar el nivel
+                    C1.</p>
+
+                <!-- Grid de Secciones -->
+                <div id="menu-sections-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Cards are generated by JavaScript -->
+                </div>
+            </section>
+
+
+            <!-- VISTA DE LA SECCIÓN 1 (Contiene todo el contenido anterior: Topic, Exercises, Feedback) -->
+            <div id="section-1-view" class="hidden">
+                <!-- Botón para volver al menú -->
+                <div class="flex justify-end mb-4">
+                    <button id="back-to-menu-btn"
+                        class="group flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-brand-300 hover:text-brand-600 text-slate-500 text-sm font-medium transition-all shadow-sm hover:shadow-md">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        <span>Menú Principal</span>
+                    </button>
+                </div>
+
+                <!-- SECTION 1: TOPIC VIEW -->
+                <section id="topic-section" class="clean-card rounded-3xl p-8 md:p-10 relative">
+
+                    <div class="flex justify-between items-start mb-8">
+                        <div>
+                            <h2
+                                class="font-display text-2xl md:text-3xl font-bold text-slate-900 mb-2 flex items-center gap-3">
+                                <span class="p-2 bg-brand-50 rounded-lg text-brand-600">
+                                    <i data-lucide="book-open" class="w-6 h-6"></i>
+                                </span>
+                                Today's Topic
+                            </h2>
+                            <p class="text-slate-500 ml-1">Repasa el contenido antes de generar los ejercicios.</p>
+                        </div>
+                        <button id="new-topic-btn"
+                            class="group flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-brand-300 hover:text-brand-600 text-slate-500 text-sm font-medium transition-all shadow-sm hover:shadow-md">
+                            <i data-lucide="refresh-cw"
+                                class="w-4 h-4 group-hover:rotate-180 transition-transform duration-500"></i>
+                            <span>Cambiar Topic</span>
+                        </button>
+                    </div>
+
+                    <!-- Dynamic Content Container -->
+                    <div id="topic-content"
+                        class="bg-white rounded-2xl p-8 border border-slate-100 shadow-sm mb-10 min-h-[120px] relative">
+                        <div id="topic-loader"
+                            class="absolute inset-0 flex flex-col items-center justify-center hidden bg-white/80 z-10">
+                            <span class="loader mb-3"></span>
+                            <span class="text-sm text-slate-500 font-medium">Syncing Notion...</span>
+                        </div>
+
+                        <div id="topic-text">
+                            <!-- Título Enlazable -->
+                            <h3 class="text-2xl font-bold text-slate-800 mb-4">
+                                <a href="#"
+                                    class="hover:text-brand-600 hover:underline decoration-2 underline-offset-4 transition-colors">The
+                                    Future of Remote Work</a>
+                            </h3>
+
+                            <p class="text-slate-600 leading-relaxed text-lg mb-8">
+                                Remote work has transitioned from a temporary necessity to a permanent feature of the
+                                modern workforce. Companies are now adopting "hybrid" models, requiring employees to
+                                balance in-office collaboration with deep work at home. This shift challenges
+                                traditional management styles.
+                            </p>
+
+                            <!-- Nueva Sección: Lista de URLs -->
+                            <div class="border-t border-slate-100 pt-6">
+                                <h4
+                                    class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                    <i data-lucide="list" class="w-3 h-3"></i>
+                                    Secciones
+                                </h4>
+                                <ul class="space-y-3">
+                                    <li>
+                                        <a href="#"
+                                            class="flex items-center gap-3 text-brand-600 hover:text-brand-800 group p-2 -ml-2 rounded-lg hover:bg-brand-50 transition-colors">
+                                            <div
+                                                class="w-6 h-6 flex items-center justify-center rounded bg-brand-100 text-brand-600 group-hover:bg-brand-200">
+                                                <i data-lucide="link" class="w-3 h-3"></i>
+                                            </div>
+                                            <span class="font-medium text-sm">Remote work policies</span>
+                                            <i data-lucide="external-link"
+                                                class="w-3 h-3 text-slate-300 group-hover:text-brand-400 ml-auto opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#"
+                                            class="flex items-center gap-3 text-brand-600 hover:text-brand-800 group p-2 -ml-2 rounded-lg hover:bg-brand-50 transition-colors">
+                                            <div
+                                                class="w-6 h-6 flex items-center justify-center rounded bg-brand-100 text-brand-600 group-hover:bg-brand-200">
+                                                <i data-lucide="link" class="w-3 h-3"></i>
+                                            </div>
+                                            <span class="font-medium text-sm">Collaboration Tools 2024</span>
+                                            <i data-lucide="external-link"
+                                                class="w-3 h-3 text-slate-300 group-hover:text-brand-400 ml-auto opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#"
+                                            class="flex items-center gap-3 text-brand-600 hover:text-brand-800 group p-2 -ml-2 rounded-lg hover:bg-brand-50 transition-colors">
+                                            <div
+                                                class="w-6 h-6 flex items-center justify-center rounded bg-brand-100 text-brand-600 group-hover:bg-brand-200">
+                                                <i data-lucide="link" class="w-3 h-3"></i>
+                                            </div>
+                                            <span class="font-medium text-sm">Employee Well-being</span>
+                                            <i data-lucide="external-link"
+                                                class="w-3 h-3 text-slate-300 group-hover:text-brand-400 ml-auto opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Phrasal Verbs Section -->
+                    <div class="mb-10">
+                        <h3 class="text-lg font-display font-bold text-slate-900 mb-5 flex items-center gap-2">
+                            <i data-lucide="layers" class="text-brand-500 w-5 h-5"></i>
+                            Phrasal verbs of the day
+                        </h3>
+
+                        <!-- GRID DE 4 CARDS -->
+                        <div id="phrasal-verbs-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                            <!-- Card 1 -->
+                            <div
+                                class="bg-white p-5 rounded-xl border border-slate-200 hover:border-brand-400 hover:shadow-lg hover:shadow-brand-500/5 transition-all group cursor-default">
+                                <div class="flex justify-between items-start mb-2">
+                                    <strong
+                                        class="text-slate-900 font-bold text-lg group-hover:text-brand-600 transition-colors">Burn
+                                        out</strong>
+                                    <span class="bg-slate-100 text-slate-500 text-xs px-2 py-1 rounded">Verb</span>
+                                </div>
+                                <p class="text-sm text-slate-600">To become extremely tired or sick by working too hard.
+                                </p>
+                            </div>
+
+                            <!-- Card 2 -->
+                            <div
+                                class="bg-white p-5 rounded-xl border border-slate-200 hover:border-brand-400 hover:shadow-lg hover:shadow-brand-500/5 transition-all group cursor-default">
+                                <div class="flex justify-between items-start mb-2">
+                                    <strong
+                                        class="text-slate-900 font-bold text-lg group-hover:text-brand-600 transition-colors">Keep
+                                        up with</strong>
+                                    <span class="bg-slate-100 text-slate-500 text-xs px-2 py-1 rounded">Verb</span>
+                                </div>
+                                <p class="text-sm text-slate-600">To continue to learn about something or do something
+                                    as it changes.</p>
+                            </div>
+
+                            <!-- Card 3 -->
+                            <div
+                                class="bg-white p-5 rounded-xl border border-slate-200 hover:border-brand-400 hover:shadow-lg hover:shadow-brand-500/5 transition-all group cursor-default">
+                                <div class="flex justify-between items-start mb-2">
+                                    <strong
+                                        class="text-slate-900 font-bold text-lg group-hover:text-brand-600 transition-colors">Look
+                                        into</strong>
+                                    <span class="bg-slate-100 text-slate-500 text-xs px-2 py-1 rounded">Verb</span>
+                                </div>
+                                <p class="text-sm text-slate-600">To investigate; to examine the facts about a problem
+                                    or situation.</p>
+                            </div>
+
+                            <!-- Card 4 -->
+                            <div
+                                class="bg-white p-5 rounded-xl border border-slate-200 hover:border-brand-400 hover:shadow-lg hover:shadow-brand-500/5 transition-all group cursor-default">
+                                <div class="flex justify-between items-start mb-2">
+                                    <strong
+                                        class="text-slate-900 font-bold text-lg group-hover:text-brand-600 transition-colors">Bring
+                                        up</strong>
+                                    <span class="bg-slate-100 text-slate-500 text-xs px-2 py-1 rounded">Verb</span>
+                                </div>
+                                <p class="text-sm text-slate-600">To start to talk about a particular subject; to
+                                    mention something.</p>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Action Button -->
+                    <button id="generate-btn"
+                        class="w-full py-4 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold shadow-lg shadow-brand-600/20 hover:shadow-brand-600/30 hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 group text-lg">
+                        <i data-lucide="sparkles" class="w-5 h-5"></i>
+                        <span>Generate AI Exercises</span>
+                        <i data-lucide="arrow-right"
+                            class="w-5 h-5 ml-1 group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                </section>
+
+                <!-- SECTION 2: EXERCISES (Hidden initially) -->
+                <section id="exercise-section" class="hidden clean-card rounded-3xl p-8 md:p-10 relative">
+                    <div class="flex items-center gap-4 mb-8 pb-6 border-b border-slate-100">
+                        <div class="p-3 bg-brand-50 rounded-xl text-brand-600">
+                            <i data-lucide="pen-tool" class="w-8 h-8"></i>
+                        </div>
+                        <div>
+                            <h2 class="font-display text-2xl font-bold text-slate-900">Practice Time</h2>
+                            <p class="text-slate-500">Complete the exercises based on the topic.</p>
+                        </div>
+                    </div>
+
+                    <div id="exercises-container" class="space-y-8">
+                        <!-- Exercise Mock 1 -->
+                        <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+                            <div class="flex justify-between mb-4">
+                                <span
+                                    class="text-xs font-bold text-brand-600 tracking-wider bg-brand-50 px-2 py-1 rounded">EXERCISE
+                                    1</span>
+                                <span class="text-xs text-slate-400 font-medium">Fill in the blank</span>
+                            </div>
+                            <p class="text-lg text-slate-700 mb-5 leading-relaxed font-medium">
+                                Many employees fear they will <span
+                                    class="inline-block w-24 border-b-2 border-slate-300 mx-1 bg-slate-50 h-6 align-bottom"></span>
+                                if they don't set strict boundaries between work and home life.
+                            </p>
+                            <input type="text" placeholder="Type your answer..."
+                                class="input-clean w-full p-4 rounded-xl text-slate-800 placeholder-slate-400">
+                        </div>
+
+                        <!-- Exercise Mock 2 -->
+                        <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+                            <div class="flex justify-between mb-4">
+                                <span
+                                    class="text-xs font-bold text-brand-600 tracking-wider bg-brand-50 px-2 py-1 rounded">EXERCISE
+                                    2</span>
+                                <span class="text-xs text-slate-400 font-medium">Multiple Choice</span>
+                            </div>
+                            <p class="text-lg text-slate-700 mb-6 leading-relaxed font-medium">
+                                Which phrasal verb means "to continue at the same speed"?
+                            </p>
+                            <div class="space-y-3">
+                                <label
+                                    class="flex items-center p-4 rounded-xl border border-slate-200 hover:border-brand-500 hover:bg-brand-50 cursor-pointer transition-all group bg-slate-50/50">
+                                    <input type="radio" name="ex2" class="w-5 h-5 accent-brand-600 border-slate-300">
+                                    <span class="ml-3 text-slate-700 group-hover:text-brand-900 font-medium">Keep up
+                                        with</span>
+                                </label>
+                                <label
+                                    class="flex items-center p-4 rounded-xl border border-slate-200 hover:border-brand-500 hover:bg-brand-50 cursor-pointer transition-all group bg-slate-50/50">
+                                    <input type="radio" name="ex2" class="w-5 h-5 accent-brand-600 border-slate-300">
+                                    <span class="ml-3 text-slate-700 group-hover:text-brand-900 font-medium">Burn
+                                        out</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-10 flex justify-end">
+                        <button id="submit-btn"
+                            class="px-8 py-3.5 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 hover:scale-[1.02] transition-all shadow-xl flex items-center gap-2">
+                            <span>Check Answers</span>
+                            <i data-lucide="check-circle" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </section>
+
+                <!-- SECTION 3: FEEDBACK (Hidden initially) -->
+                <section id="feedback-section" class="hidden clean-card rounded-3xl p-8 md:p-10">
+                    <div class="text-center mb-10">
+                        <div
+                            class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-100 text-emerald-600 mb-4 ring-4 ring-emerald-50">
+                            <i data-lucide="award" class="w-10 h-10 fill-current"></i>
+                        </div>
+                        <h2 class="font-display text-3xl font-bold text-slate-900 mb-2">Great Job!</h2>
+                        <p class="text-slate-500">You've completed today's session.</p>
+                    </div>
+
+                    <div id="feedback-container" class="space-y-6 mb-10">
+                        <!-- Correct Feedback -->
+                        <div class="p-5 rounded-xl bg-emerald-50 border border-emerald-100 flex gap-4">
+                            <div class="mt-1 text-emerald-600 shrink-0">
+                                <i data-lucide="check-circle" class="w-6 h-6 fill-emerald-100"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-emerald-700 tracking-wider mb-1 uppercase">Correct</p>
+                                <p class="text-slate-600 text-sm mb-2">Answer: <span
+                                        class="text-emerald-700 font-bold text-base">Burn out</span></p>
+                                <p class="text-sm text-slate-500">Perfect usage. Context implies exhaustion from
+                                    overwork.</p>
+                            </div>
+                        </div>
+
+                        <!-- Incorrect Feedback -->
+                        <div class="p-5 rounded-xl bg-rose-50 border border-rose-100 flex gap-4">
+                            <div class="mt-1 text-rose-500 shrink-0">
+                                <i data-lucide="x-circle" class="w-6 h-6 fill-rose-100"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-rose-600 tracking-wider mb-1 uppercase">Incorrect</p>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="text-slate-400 line-through text-sm">Get over</span>
+                                    <i data-lucide="arrow-right" class="w-3 h-3 text-slate-400"></i>
+                                    <span class="text-emerald-700 font-bold">Keep up with</span>
+                                </div>
+                                <div
+                                    class="text-sm text-slate-600 bg-white p-3 rounded-lg border border-rose-100/50 shadow-sm">
+                                    <strong>Tip:</strong> "Keep up with" means to maintain pace. "Get over" means to
+                                    recover from something.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="next-topic-btn"
+                        class="w-full py-4 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 font-bold transition-all flex items-center justify-center gap-2">
+                        <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
+                        Start Next Topic
+                    </button>
+                </section>
+            </div>
+
+            <!-- VISTA DE LA SECCIÓN 2 (Vocabulary Deep Dive) -->
+            <div id="section-vocabulary-view" class="hidden">
+                <!-- Botón para volver al menú -->
+                <div class="flex justify-end mb-4">
+                    <button id="back-to-menu-vocab-btn"
+                        class="group flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-brand-300 hover:text-brand-600 text-slate-500 text-sm font-medium transition-all shadow-sm hover:shadow-md">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        <span>Menú Principal</span>
+                    </button>
+                </div>
+
+                <section class="clean-card rounded-3xl p-8 md:p-10 relative">
+                    <!-- Header -->
+                    <div class="flex items-center gap-4 mb-8 pb-6 border-b border-slate-100">
+                        <div class="p-3 bg-brand-50 rounded-xl text-brand-600">
+                            <i data-lucide="layers" class="w-8 h-8"></i>
+                        </div>
+                        <div>
+                            <h2 class="font-display text-2xl font-bold text-slate-900">Vocabulary Deep Dive</h2>
+                            <p class="text-slate-500">Master phrasal verbs with AI-generated depth.</p>
+                        </div>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div id="vocab-loader" class="hidden flex flex-col items-center justify-center py-12">
+                        <span class="loader mb-3"></span>
+                        <span class="text-sm text-slate-500 font-medium animate-pulse">Analyzing Phrasal Verb...</span>
+                    </div>
+
+                    <!-- Content Container -->
+                    <div id="vocab-content" class="hidden space-y-10">
+                        <!-- Main Verb Display -->
+                        <div class="text-center mb-8">
+                            <h1 id="vocab-verb" class="font-display text-4xl md:text-5xl font-bold text-slate-900 mb-2">
+                                chicken out</h1>
+                            <p id="vocab-definition" class="text-xl text-slate-600 font-medium">To decide not to do
+                                something because you are too frightened.</p>
+                        </div>
+
+                        <!-- A: C1 Examples -->
+                        <div>
+                            <h3 class="flex items-center gap-2 text-xl font-bold text-slate-800 mb-4">
+                                <span class="w-2 h-8 bg-brand-500 rounded-full"></span>
+                                Frases de nivel C1
+                            </h3>
+                            <div id="vocab-examples-container" class="space-y-4">
+                                <!-- Examples rendered here -->
+                            </div>
+                        </div>
+
+                        <!-- B: Exercises -->
+                        <div>
+                            <h3 class="flex items-center gap-2 text-xl font-bold text-slate-800 mb-4">
+                                <span class="w-2 h-8 bg-amber-500 rounded-full"></span>
+                                Ejercicio (C1)
+                            </h3>
+                            <div class="bg-amber-50/50 rounded-xl p-6 border border-amber-100">
+                                <p class="text-slate-600 mb-4 font-medium flex items-center gap-2">
+                                    <i data-lucide="edit-3" class="w-4 h-4 text-amber-600"></i>
+                                    Completa las frases usando el phrasal verb (en el tiempo correcto):
+                                </p>
+                                <div id="vocab-exercises-container" class="space-y-4">
+                                    <!-- Exercises rendered here -->
+                                </div>
+                                <div class="mt-6 flex justify-end">
+                                    <button id="check-vocab-btn"
+                                        class="px-6 py-2 bg-slate-900 text-white rounded-lg font-bold text-sm tracking-wide shadow-lg hover:translate-y-px transition-all">
+                                        Check Answers
+                                    </button>
+                                </div>
+                                <div id="vocab-feedback-area" class="mt-4 hidden space-y-2">
+                                    <!-- Feedback rendered here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- C: Pronunciation -->
+                        <div>
+                            <h3 class="flex items-center gap-2 text-xl font-bold text-slate-800 mb-4">
+                                <span class="w-2 h-8 bg-emerald-500 rounded-full"></span>
+                                Pronunciación clave <i data-lucide="headphones" class="w-5 h-5 text-slate-400"></i>
+                            </h3>
+                            <div class="bg-slate-50 rounded-xl p-6 border border-slate-200">
+                                <p class="text-2xl text-slate-900 font-serif mb-4 flex items-center gap-3">
+                                    <span id="vocab-ipa">/ˈtʃɪkɪn aʊt/</span>
+                                    <button id="vocab-audio-btn"
+                                        class="p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-brand-600 transition-colors"
+                                        title="Listen to pronunciation">
+                                        <i data-lucide="volume-2" class="w-5 h-5"></i>
+                                    </button>
+                                </p>
+                                <div class="space-y-2">
+                                    <p
+                                        class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                        <i data-lucide="lightbulb" class="w-4 h-4 text-amber-500"></i> Ojo con:
+                                    </p>
+                                    <ul id="vocab-tips-list" class="space-y-2 list-disc list-inside text-slate-700">
+                                        <!-- Tips rendered here -->
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- D: Common Error (B2) -->
+                        <div id="vocab-common-error-section" class="hidden">
+                            <h3 class="flex items-center gap-2 text-xl font-bold text-rose-600 mb-4">
+                                <i data-lucide="x-circle" class="w-6 h-6"></i>
+                                <span id="vocab-error-title">Error muy común (nivel B2)</span>
+                            </h3>
+                            <div class="bg-white rounded-xl p-6 border-l-4 border-rose-500 shadow-sm">
+                                <p id="vocab-error-desc" class="text-slate-800 mb-4 leading-relaxed">
+                                    <!-- Error description -->
+                                </p>
+                                <div class="bg-orange-50 rounded-lg p-4">
+                                    <p id="vocab-error-correction" class="text-sm font-bold text-orange-800 mb-2">👉 En
+                                        esos casos, un nativo diría:</p>
+                                    <ul id="vocab-error-examples"
+                                        class="space-y-1 list-disc list-inside text-slate-700">
+                                        <!-- Native examples -->
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- E: C1 Tip -->
+                        <div id="vocab-c1-tip-section" class="hidden">
+                            <h3 class="flex items-center gap-2 text-xl font-bold text-slate-800 mb-4">
+                                <span class="text-2xl">🧠</span>
+                                <span id="vocab-tip-title">Consejo C1</span>
+                            </h3>
+                            <div class="bg-slate-50 rounded-xl p-6 border border-slate-200">
+                                <p id="vocab-tip-desc" class="text-slate-800 font-medium mb-3"></p>
+                                <ul id="vocab-tip-alternatives"
+                                    class="space-y-1 list-disc list-inside text-slate-600 mb-4">
+                                    <!-- Alternatives -->
+                                </ul>
+                                <div class="pl-4 border-l-2 border-slate-300">
+                                    <p class="text-sm text-slate-500 uppercase font-bold mb-1">Ejemplo C1:</p>
+                                    <p id="vocab-tip-example" class="text-slate-800 italic font-serif text-lg"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- F: Refine My Sentence -->
+                        <div class="bg-indigo-50 rounded-2xl p-8 border border-indigo-100">
+                            <h3 class="text-xl font-bold text-indigo-900 mb-2">Refine Your Sentence ✍️</h3>
+                            <p class="text-indigo-700/80 mb-4 text-sm">Escribe una frase tuya con este phrasal verb y la
+                                puliremos a nivel C1.</p>
+
+                            <div class="flex flex-col gap-3">
+                                <textarea id="vocab-refine-input" rows="2"
+                                    class="w-full p-4 rounded-xl border-2 border-indigo-200 focus:border-indigo-500 focus:ring-0 text-slate-700 placeholder:text-indigo-300 transition-all font-medium"
+                                    placeholder="I talked to my boss but I chickened out..."></textarea>
+
+                                <div class="flex justify-end">
+                                    <button id="vocab-refine-btn"
+                                        class="flex items-center gap-2 px-6 py-2 bg-indigo-600 text-white rounded-lg font-bold shadow-md hover:bg-indigo-700 transition-all">
+                                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+                                        Polish to C1
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="vocab-refine-result"
+                                class="hidden mt-6 bg-white rounded-xl p-6 border border-indigo-100 shadow-sm animate-fade-in">
+                                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Improved
+                                    Version:</p>
+                                <p id="vocab-refine-output" class="text-lg font-bold text-indigo-900 mb-3 font-serif">
+                                </p>
+                                <div class="bg-indigo-50/50 p-3 rounded-lg">
+                                    <p class="text-xs font-bold text-indigo-600 uppercase mb-1">Why is this better?</p>
+                                    <p id="vocab-refine-explanation" class="text-sm text-slate-600 leading-relaxed"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- New Verb Button -->
+                        <div class="pt-8 text-center border-t border-slate-100">
+                            <button id="next-vocab-btn"
+                                class="px-8 py-3 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors flex items-center gap-2 mx-auto">
+                                <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                                Nuevo Phrasal Verb
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- VISTA DE LA SECCIÓN 3 (Grammar Practice) -->
+            <div id="section-2-view" class="hidden">
+                <!-- Botón para volver al menú -->
+                <div class="flex justify-end mb-4">
+                    <button id="back-to-menu-btn-2"
+                        class="group flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-brand-300 hover:text-brand-600 text-slate-500 text-sm font-medium transition-all shadow-sm hover:shadow-md">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        <span>Menú Principal</span>
+                    </button>
+                </div>
+
+                <!-- GRAMMAR PRACTICE SECTION -->
+                <section id="grammar-practice-section" class="clean-card rounded-3xl p-8 md:p-10 relative">
+                    <div class="flex items-center gap-4 mb-8 pb-6 border-b border-slate-100">
+                        <div class="p-3 bg-brand-50 rounded-xl text-brand-600">
+                            <i data-lucide="dna" class="w-8 h-8"></i>
+                        </div>
+                        <div>
+                            <h2 class="font-display text-2xl font-bold text-slate-900">Grammar Practice</h2>
+                            <p class="text-slate-500">Escribe ejemplos usando los conceptos gramaticales.</p>
+                        </div>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div id="grammar-loader" class="hidden flex flex-col items-center justify-center py-12">
+                        <span class="loader mb-3"></span>
+                        <span class="text-sm text-slate-500 font-medium">Cargando conceptos...</span>
+                    </div>
+
+                    <!-- Grammar Concepts Container -->
+                    <div id="grammar-concepts-container" class="space-y-6 mb-8">
+                        <!-- Concepts will be rendered here -->
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div id="grammar-submit-container" class="hidden mt-10 flex justify-end">
+                        <button id="submit-grammar-btn"
+                            class="px-8 py-3.5 rounded-xl bg-brand-600 text-white font-bold hover:bg-brand-700 hover:scale-[1.02] transition-all shadow-xl flex items-center gap-2">
+                            <span>Corregir</span>
+                            <i data-lucide="check-circle" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </section>
+
+                <!-- GRAMMAR FEEDBACK SECTION (Hidden initially) -->
+                <section id="grammar-feedback-section" class="hidden clean-card rounded-3xl p-8 md:p-10 mt-6">
+                    <div class="text-center mb-10">
+                        <div
+                            class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-brand-100 text-brand-600 mb-4 ring-4 ring-brand-50">
+                            <i data-lucide="award" class="w-10 h-10 fill-current"></i>
+                        </div>
+                        <h2 class="font-display text-3xl font-bold text-slate-900 mb-2">Correcciones</h2>
+                        <p class="text-slate-500">Aquí está el feedback de tus frases.</p>
+                    </div>
+
+                    <div id="grammar-feedback-container" class="space-y-8">
+                        <!-- Feedback will be rendered here -->
+                    </div>
+
+                    <button id="new-grammar-practice-btn"
+                        class="w-full mt-10 py-4 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 font-bold transition-all flex items-center justify-center gap-2">
+                        <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
+                        Nueva Práctica
+                    </button>
+                </section>
+            </div>
+
+            <!-- VISTA DE LA SECCIÓN 3 (Pronunciation Trainer) -->
+            <div id="section-3-view" class="hidden">
+                <!-- Botón para volver al menú -->
+                <div class="flex justify-end mb-4">
+                    <button id="back-to-menu-btn-3"
+                        class="group flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-slate-200 hover:border-brand-300 hover:text-brand-600 text-slate-500 text-sm font-medium transition-all shadow-sm hover:shadow-md">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        <span>Menú Principal</span>
+                    </button>
+                </div>
+
+                <!-- PRONUNCIATION PRACTICE SECTION -->
+                <section id="pronunciation-practice-section" class="clean-card rounded-3xl p-8 md:p-10 relative">
+                    <div class="flex items-center gap-4 mb-8 pb-6 border-b border-slate-100">
+                        <div class="p-3 bg-brand-50 rounded-xl text-brand-600">
+                            <i data-lucide="megaphone" class="w-8 h-8"></i>
+                        </div>
+                        <div>
+                            <h2 class="font-display text-2xl font-bold text-slate-900">Pronunciation Trainer</h2>
+                            <p class="text-slate-500">Practica tu pronunciación con IA.</p>
+                        </div>
+                    </div>
+
+                    <!-- Word Selection Mode Toggle -->
+                    <div class="mb-8 flex gap-4">
+                        <button id="mode-gemini-btn"
+                            class="flex-1 px-6 py-3 rounded-xl bg-brand-600 text-white font-bold transition-all shadow-md">
+                            <i data-lucide="sparkles" class="w-5 h-5 inline mr-2"></i>
+                            Palabra de Gemini
+                        </button>
+                        <button id="mode-list-btn"
+                            class="flex-1 px-6 py-3 rounded-xl bg-white border-2 border-slate-200 text-slate-600 font-bold transition-all hover:border-brand-300">
+                            <i data-lucide="list" class="w-5 h-5 inline mr-2"></i>
+                            Elegir de Lista
+                        </button>
+                    </div>
+
+                    <!-- Word List (Hidden by default) -->
+                    <div id="word-list-container" class="hidden mb-8">
+                        <h3 class="text-lg font-bold text-slate-900 mb-4">Selecciona una palabra:</h3>
+                        <div id="word-list-grid"
+                            class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-96 overflow-y-auto p-2">
+                            <!-- Words will be rendered here -->
+                        </div>
+                    </div>
+
+                    <!-- Current Word Display -->
+                    <div id="current-word-display"
+                        class="mb-8 p-8 bg-gradient-to-br from-brand-50 to-purple-50 rounded-2xl border-2 border-brand-200 text-center">
+                        <div id="word-loader" class="hidden flex flex-col items-center justify-center py-8">
+                            <span class="loader mb-3"></span>
+                            <span class="text-sm text-slate-500 font-medium">Cargando palabra...</span>
+                        </div>
+                        <div id="word-content" class="hidden">
+                            <p class="text-sm text-brand-600 font-semibold uppercase tracking-wider mb-2">Pronuncia esta
+                                palabra:</p>
+                            <h3 id="word-text" class="text-5xl font-display font-bold text-slate-900 mb-3">thorough</h3>
+                            <p id="word-ipa" class="text-2xl text-slate-600 mb-4">/ˈθʌrə/</p>
+                            <div id="word-tips"
+                                class="inline-block px-4 py-2 bg-white rounded-lg border border-brand-200">
+                                <p class="text-sm text-slate-600"><strong>Tip:</strong> <span id="word-tips-text">The
+                                        'th' sound is dental</span></p>
+                            </div>
+                            <button id="save-word-btn"
+                                class="ml-4 px-4 py-2 rounded-lg bg-white border border-brand-200 text-brand-600 font-bold hover:bg-brand-50 transition-all shadow-sm flex items-center gap-2 inline-flex">
+                                <i data-lucide="bookmark" class="w-4 h-4"></i>
+                                <span>Save</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Recording Controls -->
+                    <div id="recording-controls" class="hidden mb-8">
+                        <div class="flex flex-col items-center gap-4">
+                            <div class="flex gap-4">
+                                <button id="record-btn"
+                                    class="px-8 py-4 rounded-xl bg-rose-600 text-white font-bold hover:bg-rose-700 transition-all shadow-lg flex items-center gap-2">
+                                    <i data-lucide="mic" class="w-6 h-6"></i>
+                                    <span>Grabar</span>
+                                </button>
+                                <button id="stop-btn" disabled
+                                    class="px-8 py-4 rounded-xl bg-slate-400 text-white font-bold transition-all shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <i data-lucide="square" class="w-6 h-6"></i>
+                                    <span>Detener</span>
+                                </button>
+                            </div>
+                            <div id="recording-status" class="hidden flex items-center gap-2 text-rose-600">
+                                <div class="w-3 h-3 bg-rose-600 rounded-full animate-pulse"></div>
+                                <span class="font-semibold">Grabando...</span>
+                            </div>
+                            <div id="audio-preview" class="hidden w-full max-w-md">
+                                <p class="text-sm text-slate-600 mb-2">Tu grabación:</p>
+                                <audio id="audio-playback" controls class="w-full"></audio>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analyze Button -->
+                    <div id="analyze-container" class="hidden flex justify-center mb-8">
+                        <button id="analyze-btn"
+                            class="px-10 py-4 rounded-xl bg-brand-600 text-white font-bold hover:bg-brand-700 transition-all shadow-xl flex items-center gap-2">
+                            <i data-lucide="brain" class="w-6 h-6"></i>
+                            <span>Analizar Pronunciación</span>
+                        </button>
+                    </div>
+
+                    <!-- New Word Button -->
+                    <div class="flex justify-center">
+                        <button id="new-word-btn"
+                            class="px-8 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-600 font-bold transition-all flex items-center gap-2">
+                            <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                            <span>Nueva Palabra</span>
+                        </button>
+                    </div>
+                </section>
+
+                <!-- PRONUNCIATION FEEDBACK SECTION (Hidden initially) -->
+                <section id="pronunciation-feedback-section" class="hidden clean-card rounded-3xl p-8 md:p-10 mt-6">
+                    <!-- Score Display -->
+                    <div class="text-center mb-8">
+                        <div
+                            class="inline-flex items-center justify-center w-32 h-32 rounded-full bg-gradient-to-br from-brand-500 to-purple-600 text-white mb-4 ring-8 ring-brand-50 relative">
+                            <div class="text-center">
+                                <div id="pronunciation-score" class="text-5xl font-bold">85</div>
+                                <div class="text-sm font-semibold">/ 100</div>
+                            </div>
+                        </div>
+                        <h2 class="font-display text-3xl font-bold text-slate-900 mb-2">Análisis de Pronunciación</h2>
+                        <p class="text-slate-500">Aquí está el feedback de tu pronunciación.</p>
+                    </div>
+
+                    <!-- Feedback Content -->
+                    <div id="pronunciation-feedback-container" class="space-y-6 mb-8">
+                        <!-- Feedback will be rendered here -->
+                    </div>
+
+                    <!-- Correct Pronunciation Audio -->
+                    <div class="p-6 bg-emerald-50 rounded-xl border border-emerald-200">
+                        <div class="flex items-center gap-3 mb-4">
+                            <i data-lucide="volume-2" class="w-6 h-6 text-emerald-600"></i>
+                            <h3 class="text-lg font-bold text-slate-900">Pronunciación Correcta</h3>
+                        </div>
+                        <button id="play-correct-btn"
+                            class="w-full px-6 py-3 rounded-lg bg-emerald-600 text-white font-bold hover:bg-emerald-700 transition-all flex items-center justify-center gap-2">
+                            <i data-lucide="play" class="w-5 h-5"></i>
+                            <span>Escuchar Pronunciación Correcta</span>
+                        </button>
+                    </div>
+                </section>
+            </div>
+
+        </main>
+
+        <footer class="mt-12 text-center text-slate-400 text-sm font-medium">
+            <p>&copy; 2024 English Trainer AI. Built for C1 Learners.</p>
+        </footer>
+
+    </div>
+
+    <!-- Application Logic -->
+    <script src="app.js"></script>
+
+    </script>
+</body>
+
+</html>

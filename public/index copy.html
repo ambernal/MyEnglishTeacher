@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Trainer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <header>
+            <h1>English Trainer</h1>
+            <p>Daily practice from your Notion notes</p>
+        </header>
+
+        <main>
+            <section id="topic-section" class="card">
+                <h2>Today's Topic</h2>
+                <div id="topic-content" class="content-area">
+                    <div class="loading-spinner"></div>
+                    <p>Loading daily topic...</p>
+                </div>
+
+                <div id="phrasal-verbs-section" class="mt-4">
+                    <h3>Today's Phrasal Verbs</h3>
+                    <div id="phrasal-verbs-list" class="content-area">
+                        <p>Loading vocabulary...</p>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button id="generate-btn" class="primary-btn" disabled>Generate Exercises</button>
+                    <button id="new-topic-btn" class="secondary-btn">Pick Another Topic</button>
+                </div>
+            </section>
+
+            <section id="exercise-section" class="card hidden">
+                <h2>Exercises</h2>
+                <div id="exercises-container"></div>
+                <button id="submit-btn" class="primary-btn">Check Answers</button>
+            </section>
+
+            <section id="feedback-section" class="card hidden">
+                <h2>Feedback</h2>
+                <div id="feedback-container"></div>
+                <button id="next-topic-btn" class="secondary-btn">Next Topic</button>
+            </section>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+
+</html>
