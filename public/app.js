@@ -16,6 +16,16 @@ const state = {
     pronunciationFeedback: null
 };
 
+const SECTION_SUBTITLES = {
+    'default': 'Transforma tus notas de Notion en ejercicios de alto nivel.',
+    'menu': 'Transforma tus notas de Notion en ejercicios de alto nivel.',
+    'section-1': 'Practica comprensión, vocabulario y gramática basada en un tópico C1.',
+    '2': 'Expande tu léxico C1 con palabras avanzadas y phrasal verbs.',
+    '3': 'Domina estructuras complejas como inversiones, modales y consistencia de tiempos.',
+    '5': 'Mejora tu entonación y fluidez con ejercicios de audio enfocados.',
+    '6': 'Lecciones profundas de gramática y estilo con ejercicios interactivos.'
+};
+
 // DOM Elements
 const views = {
     menu: document.getElementById('main-menu-section'),
@@ -58,7 +68,9 @@ function showView(viewName) {
         'feedback': 'feedback-section',
         '2': 'section-vocabulary-view',
         '3': 'section-2-view',
-        '5': 'section-3-view'
+        '5': 'section-3-view',
+        '6': 'c1-improvement-section',
+        '7': 'section-stories-view'
     };
 
     const targetId = viewMap[viewName] || viewName;
@@ -70,7 +82,9 @@ function showView(viewName) {
         'section-vocabulary-view',
         'topic-section',
         'exercise-section',
-        'feedback-section'
+        'feedback-section',
+        'c1-improvement-section',
+        'section-stories-view'
     ];
 
     // Hide all views
@@ -115,6 +129,18 @@ function showView(viewName) {
         loadGrammarConcepts();
     } else if (viewName === '5') {
         initializePronunciationTrainer();
+    } else if (viewName === '7') {
+        initializeInteractiveStory();
+    }
+
+    // Update Subtitle
+    const subtitleEl = document.getElementById('app-subtitle');
+    if (subtitleEl) {
+        const text = SECTION_SUBTITLES[viewName] || SECTION_SUBTITLES['default'];
+        subtitleEl.textContent = text;
+        subtitleEl.classList.remove('animate-fade-in');
+        void subtitleEl.offsetWidth; // Trigger reflow for animation restart
+        subtitleEl.classList.add('animate-fade-in');
     }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -156,13 +182,15 @@ function updateStepper(step) {
 }
 
 // --------------------- MENU RENDERING ---------------------
+//    { id: 3, title: "Grammar Challenge", description: "Domina estructuras complejas como inversiones, modales y consistencia de tiempos.", icon: "dna" },
 
 const appSections = [
-    { id: 1, title: "Daily Topic & Exercises", description: "Practica comprensión, vocabulario y gramática basada en un tópico C1.", icon: "book-open" },
+    { id: 1, title: "Daily Topic & Exercises", description: "Practica comprensión, vocabulario y gramática basada en tu DAG de Notion.", icon: "book-open" },
     { id: 2, title: "Vocabulary Deep Dive", description: "Expande tu léxico C1 con palabras avanzadas y phrasal verbs.", icon: "layers" },
-    { id: 3, title: "Grammar Challenge", description: "Domina estructuras complejas como inversiones, modales y consistencia de tiempos.", icon: "dna" },
+    { id: 3, title: "Grammar Challenge", description: "Domina estructuras comunes como tipicos Locations, Follow-ups, Transition Phrases, Fillers and prepositional Phrases", icon: "dna" },
     { id: 4, title: "Writing Practice (C1)", description: "Genera ensayos y recibe feedback estructurado sobre estilo y cohesión.", icon: "feather" },
     { id: 5, title: "Pronunciation Trainer", description: "Mejora tu entonación y fluidez con ejercicios de audio enfocados.", icon: "megaphone" },
+    { id: 6, title: "Improve your C1 Level", description: "Lecciones profundas de gramática y estilo con ejercicios interactivos.", icon: "zap" },
 ];
 
 function renderMenu() {
@@ -201,6 +229,12 @@ function renderMenu() {
             } else if (sectionId === 5) {
                 // Pronunciation Trainer
                 showView('5');
+            } else if (sectionId === 6) {
+                // Improve your C1 Level
+                showView('6');
+                setTimeout(() => {
+                    loadC1Lesson();
+                }, 100);
             } else {
                 alert(`Sección ${sectionId}: ${appSections.find(s => s.id === sectionId).title}. Contenido no implementado aún.`);
             }
@@ -938,14 +972,18 @@ function toggleMode(mode) {
 function renderWordList() {
     if (!wordListGrid || !state.allWords.length) return;
 
-    const html = state.allWords.map((word, index) => `
-        <button 
-            class="word-list-item px-4 py-3 rounded-lg bg-white border-2 border-slate-200 hover:border-brand-500 hover:bg-brand-50 transition-all text-left"
-            data-word-index="${index}">
-            <div class="font-bold text-slate-900">${word.word}</div>
-            <div class="text-xs text-slate-500">${word.ipa}</div>
-        </button>
-    `).join('');
+    const html = state.allWords.map((word, index) => {
+        const isSaved = word.difficulty === 'saved';
+        return `
+            <button 
+                class="word-list-item px-4 py-3 rounded-lg bg-white border-2 border-slate-200 hover:border-brand-500 hover:bg-brand-50 transition-all text-left relative overflow-hidden group"
+                data-word-index="${index}">
+                ${isSaved ? '<div class="absolute top-0 right-0 bg-emerald-500 text-white text-[10px] px-2 py-0.5 rounded-bl-lg font-bold">SAVED</div>' : ''}
+                <div class="font-bold text-slate-900">${word.word}</div>
+                <div class="text-xs text-slate-500">${word.ipa}</div>
+            </button>
+        `;
+    }).join('');
 
     wordListGrid.innerHTML = html;
 
@@ -1012,8 +1050,11 @@ async function loadWord() {
     }
 }
 
+const wordTranslation = document.getElementById('word-translation');
+
 function displayWord(word) {
     if (wordText) wordText.textContent = word.word;
+    if (wordTranslation) wordTranslation.textContent = word.spanish_translation || ''; // Show translation or empty
     if (wordIpa) wordIpa.textContent = word.ipa || '';
     if (wordTipsText) wordTipsText.textContent = word.tips || 'No tips available';
 
@@ -1049,6 +1090,14 @@ async function saveCurrentWord() {
             saveWordBtn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i><span>Saved</span>';
             saveWordBtn.classList.remove('bg-white', 'text-brand-600', 'border-brand-200');
             saveWordBtn.classList.add('bg-emerald-50', 'text-emerald-600', 'border-emerald-200');
+
+            // Refresh words list to include the new one
+            const wordsRes = await fetch(`${API_BASE}/pronunciation/words`);
+            if (wordsRes.ok) {
+                const wordsData = await wordsRes.json();
+                state.allWords = wordsData.words;
+                renderWordList();
+            }
         } else {
             throw new Error('Failed to save');
         }
@@ -1158,13 +1207,18 @@ async function analyzePronunciation() {
         const data = await res.json();
         console.log('📦 Pronunciation analysis received:', data);
 
+        if (data.error) {
+            throw new Error(data.error);
+        }
+
         let analysis = {};
         try {
+            if (!data.analysis) throw new Error('No analysis data received');
             let cleanText = data.analysis.replace(/```json/g, '').replace(/```/g, '').trim();
             analysis = JSON.parse(cleanText);
         } catch (e) {
             console.error('❌ Failed to parse analysis JSON', e);
-            alert('Error parsing analysis. Check console.');
+            alert('Error parsing analysis: ' + e.message);
             return;
         }
 
@@ -1281,22 +1335,27 @@ const nextVocabBtn = document.getElementById('next-vocab-btn');
 const checkVocabBtn = document.getElementById('check-vocab-btn');
 const backToMenuVocabBtn = document.getElementById('back-to-menu-vocab-btn');
 
-async function loadVocabularyDeepDive() {
+async function loadVocabularyDeepDive(specificVerb = null, specificDef = null) {
     if (vocabLoader) vocabLoader.classList.remove('hidden');
     if (vocabContent) vocabContent.classList.add('hidden');
 
     try {
-        // 1. Get Random Verb from Sheets API (reuse existing functionality logic)
-        const resSheets = await fetch(`${API_BASE}/sheets/phrasal-verbs`);
-        if (!resSheets.ok) throw new Error('Failed to fetch verbs list');
+        let phrasalVerb = specificVerb;
+        let definition = specificDef;
 
-        const dataSheets = await resSheets.json();
-        const rows = dataSheets.rows || [];
-        if (rows.length === 0) throw new Error('No phrasal verbs found');
+        if (!phrasalVerb || !definition) {
+            // 1. Get Random Verb from Sheets API if no specific one provided
+            const resSheets = await fetch(`${API_BASE}/sheets/phrasal-verbs`);
+            if (!resSheets.ok) throw new Error('Failed to fetch verbs list');
 
-        const randomRow = rows[Math.floor(Math.random() * rows.length)];
-        const phrasalVerb = randomRow[0];
-        const definition = randomRow[1];
+            const dataSheets = await resSheets.json();
+            const rows = dataSheets.rows || [];
+            if (rows.length === 0) throw new Error('No phrasal verbs found');
+
+            const randomRow = rows[Math.floor(Math.random() * rows.length)];
+            phrasalVerb = randomRow[0];
+            definition = randomRow[1];
+        }
 
         console.log(`✨ Selected Verb: ${phrasalVerb}`);
 
@@ -1340,12 +1399,15 @@ const vocabRefineResult = document.getElementById('vocab-refine-result');
 const vocabRefineOutput = document.getElementById('vocab-refine-output');
 const vocabRefineExplanation = document.getElementById('vocab-refine-explanation');
 
+const vocabTranslation = document.getElementById('vocab-translation');
+
 function renderVocabularyDeepDive(verb, def, data) {
     if (!vocabContent) return;
 
     // Header
     if (vocabVerb) vocabVerb.textContent = verb;
     if (vocabDefinition) vocabDefinition.textContent = def;
+    if (vocabTranslation) vocabTranslation.textContent = data.spanish_translation ? `(${data.spanish_translation})` : '';
 
     // A. Examples
     if (vocabExamplesContainer) {
@@ -1369,7 +1431,8 @@ function renderVocabularyDeepDive(verb, def, data) {
         checkVocabBtn.textContent = 'Check Answers';
 
         vocabExercisesContainer.innerHTML = data.exercises.map((ex, i) => {
-            const questionHtml = ex.question.replace(/_____/g, `
+            // Robust regex to catch [GAP], _____, [...], or (gap)
+            const questionHtml = ex.question.replace(/(\[GAP\]|_{3,}|\[\.\.\.\]|\(gap\))/gi, `
                 <input type="text" id="vocab-input-${i}" 
                 class="inline-input mx-1 px-2 py-1 border-b-2 border-slate-300 focus:border-amber-500 bg-white text-slate-800 font-bold outline-none transition-colors w-32 text-center" 
                 autocomplete="off">
@@ -1396,7 +1459,12 @@ function renderVocabularyDeepDive(verb, def, data) {
         vocabErrorDesc.textContent = data.common_error.description;
         vocabErrorCorrection.textContent = data.common_error.correction || '👉 Native alternative:';
         if (vocabErrorExamples) {
-            vocabErrorExamples.innerHTML = data.common_error.examples.map(ex => `<li>${ex}</li>`).join('');
+            vocabErrorExamples.innerHTML = data.common_error.examples.map(ex => {
+                const text = typeof ex === 'object' && ex !== null
+                    ? (ex.text || ex.sentence || ex.english || ex.example || Object.values(ex).join(' - '))
+                    : ex;
+                return `<li>${text}</li>`;
+            }).join('');
         }
         vocabErrorSection.classList.remove('hidden');
     } else if (vocabErrorSection) {
@@ -1408,7 +1476,12 @@ function renderVocabularyDeepDive(verb, def, data) {
         vocabTipTitle.textContent = data.c1_tip.title || 'Consejo C1';
         vocabTipDesc.textContent = data.c1_tip.description;
         if (vocabTipAlternatives) {
-            vocabTipAlternatives.innerHTML = data.c1_tip.alternatives.map(alt => `<li><strong>${alt}</strong></li>`).join('');
+            vocabTipAlternatives.innerHTML = data.c1_tip.alternatives.map(alt => {
+                const text = typeof alt === 'object' && alt !== null
+                    ? (alt.text || alt.alternative || alt.phrase || alt.english || Object.values(alt).join(' - '))
+                    : alt;
+                return `<li><strong>${text}</strong></li>`;
+            }).join('');
         }
         vocabTipExample.textContent = data.c1_tip.example;
         vocabTipSection.classList.remove('hidden');
@@ -1593,9 +1666,15 @@ function showWaitingActivity() {
                         <h2 class="text-2xl font-bold text-slate-900 mb-4">Did you know?</h2>
                         
                         <div class="bg-indigo-50 rounded-xl p-6 w-full border border-indigo-100 mb-6">
-                            <p class="text-xl font-bold text-indigo-900 mb-2">${activity.verb}</p>
+                        <p class="text-xl font-bold text-indigo-900 mb-2">${activity.verb}</p>
                             <p class="text-slate-600">${activity.definition}</p>
                         </div>
+
+                        <button id="deep-dive-btn" class="w-full bg-indigo-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-indigo-700 transition-all mb-3 flex items-center justify-center gap-2 group">
+                            <i data-lucide="layers" class="w-5 h-5"></i>
+                            <span>Study in Deep Dive</span>
+                            <i data-lucide="arrow-right" class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                        </button>
 
                         <p class="text-xs text-slate-400 italic">Processing your results...</p>
                         <button onclick="closeWaitingActivity()" class="mt-4 text-sm text-slate-500 hover:text-slate-800 underline">
@@ -1606,12 +1685,17 @@ function showWaitingActivity() {
             </div>
         `;
 
-        // Inject to body
         document.body.insertAdjacentHTML('beforeend', modalHtml);
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
+        // Add event listener for Deep Dive
+        document.getElementById('deep-dive-btn').addEventListener('click', () => {
+            closeWaitingActivity();
+            showView('2'); // View 2 is Vocabulary Deep Dive
+            loadVocabularyDeepDive(activity.verb, activity.definition);
+        });
     } catch (e) {
-        console.error('Error showing waiting activity', e);
+        console.error('Error showing waiting activity:', e);
     }
 }
 
@@ -1624,6 +1708,403 @@ window.closeWaitingActivity = function () {
     }
 };
 
+// --------------------- SECTION 6: C1 IMPROVEMENT LESSON (New) ---------------------
+
+const c1Loader = document.getElementById('c1-loader');
+const c1Content = document.getElementById('c1-content');
+const c1Topic = document.getElementById('c1-topic');
+const c1ExplanationEn = document.getElementById('c1-explanation-en');
+const c1ExplanationEs = document.getElementById('c1-explanation-es');
+const c1ExamplesContainer = document.getElementById('c1-examples-container');
+const c1ExercisesContainer = document.getElementById('c1-exercises-container');
+const checkC1Btn = document.getElementById('check-c1-btn');
+const c1FeedbackArea = document.getElementById('c1-feedback-area');
+const c1OverallFeedback = document.getElementById('c1-overall-feedback');
+const c1CorrectionsList = document.getElementById('c1-corrections-list');
+const newC1LessonBtn = document.getElementById('new-c1-lesson-btn');
+const backToMenuBtn6 = document.getElementById('back-to-menu-btn-6');
+
+// New Logic Elements
+const saveC1LessonBtn = document.getElementById('save-c1-lesson-btn');
+const loadC1Btn = document.getElementById('load-c1-btn');
+const savedLessonsModal = document.getElementById('saved-lessons-modal');
+const savedLessonsList = document.getElementById('saved-lessons-list');
+const deleteC1LessonBtn = document.getElementById('delete-c1-lesson-btn');
+
+// Global scope for closing modal
+window.closeSavedLessonsModal = function () {
+    if (savedLessonsModal) savedLessonsModal.classList.add('hidden');
+};
+
+async function loadC1Lesson() {
+    console.log('⚡ loadC1Lesson called');
+    if (!c1Loader) console.error('❌ c1Loader element not found');
+
+    if (c1Loader) c1Loader.classList.remove('hidden');
+    if (c1Content) c1Content.classList.add('hidden');
+
+    try {
+        const res = await fetch(`${API_BASE}/gemini/c1-lesson`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!res.ok) throw new Error('Failed to fetch lesson');
+
+        const data = await res.json();
+        state.c1LessonData = data; // Store for correction
+
+        renderC1Lesson(data);
+
+    } catch (error) {
+        console.error('Error loading C1 Lesson:', error);
+        alert('Error loading lesson. Please try again.');
+    } finally {
+        if (c1Loader) c1Loader.classList.add('hidden');
+    }
+}
+
+async function saveCurrentC1Lesson() {
+    if (!state.c1LessonData) return;
+
+    if (saveC1LessonBtn) {
+        saveC1LessonBtn.disabled = true;
+        saveC1LessonBtn.innerHTML = '<span class="loader w-4 h-4 border-emerald-600"></span> Saving...';
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/c1/save`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(state.c1LessonData)
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            // Mark as saved in state
+            state.c1LessonData.id = data.lessonId;
+
+            if (saveC1LessonBtn) {
+                saveC1LessonBtn.innerHTML = '<i data-lucide="check" class="w-5 h-5"></i><span>Saved</span>';
+                saveC1LessonBtn.classList.remove('text-emerald-600', 'bg-white', 'border-slate-200');
+                saveC1LessonBtn.classList.add('bg-emerald-100', 'text-emerald-700', 'border-emerald-200');
+            }
+            // Show delete button
+            if (deleteC1LessonBtn) deleteC1LessonBtn.classList.remove('hidden');
+        }
+
+    } catch (error) {
+        console.error('Error saving lesson:', error);
+        alert('Could not save lesson.');
+        if (saveC1LessonBtn) {
+            saveC1LessonBtn.disabled = false;
+            saveC1LessonBtn.innerHTML = '<i data-lucide="bookmark" class="w-5 h-5"></i><span>Save Lesson</span>';
+        }
+    }
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+async function openSavedLessonsModal() {
+    if (savedLessonsModal) savedLessonsModal.classList.remove('hidden');
+
+    // Fetch lessons
+    try {
+        const res = await fetch(`${API_BASE}/c1/saved`);
+        const lessons = await res.json();
+        renderSavedLessonsList(lessons);
+    } catch (error) {
+        console.error('Error fetching saved C1 lessons:', error);
+        if (savedLessonsList) savedLessonsList.innerHTML = '<p class="text-rose-500">Error loading lessons.</p>';
+    }
+}
+
+function renderSavedLessonsList(lessons) {
+    if (!savedLessonsList) return;
+
+    if (lessons.length === 0) {
+        savedLessonsList.innerHTML = '<div class="text-center py-10 text-slate-500"><i data-lucide="inbox" class="w-10 h-10 mx-auto mb-2 opacity-50"></i><p>No saved lessons yet.</p></div>';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        return;
+    }
+
+    savedLessonsList.innerHTML = lessons.map(lesson => `
+        <div class="group p-4 rounded-xl border border-slate-200 hover:border-purple-300 hover:bg-purple-50 transition-all cursor-pointer relative bg-white"
+            onclick="loadSavedC1Lesson('${lesson.id}')">
+            
+            <div class="pr-10">
+                <h4 class="font-bold text-slate-900 mb-1 group-hover:text-purple-700 transition-colors">${lesson.topic}</h4>
+                <p class="text-xs text-slate-500 flex items-center gap-2">
+                    <i data-lucide="calendar" class="w-3 h-3"></i>
+                    ${new Date(lesson.savedAt).toLocaleDateString()} at ${new Date(lesson.savedAt).toLocaleTimeString()}
+                </p>
+            </div>
+
+            <button onclick="event.stopPropagation(); deleteSavedC1Lesson('${lesson.id}');" 
+                    class="absolute top-4 right-4 p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all z-10"
+                    title="Delete">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+        </div>
+    `).join('');
+
+    // We store all lessons in a temp variable to easily retrieve the full object later
+    window.tempSavedLessons = lessons;
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+// Global scope for onclicks
+window.loadSavedC1Lesson = function (id) {
+    const lesson = window.tempSavedLessons.find(l => l.id === id);
+    if (lesson) {
+        state.c1LessonData = lesson;
+        renderC1Lesson(lesson);
+        closeSavedLessonsModal();
+
+        // Setup buttons for saved state
+        if (saveC1LessonBtn) {
+            saveC1LessonBtn.innerHTML = '<i data-lucide="check" class="w-5 h-5"></i><span>Saved</span>';
+            saveC1LessonBtn.classList.remove('text-emerald-600', 'bg-white', 'border-slate-200');
+            saveC1LessonBtn.classList.add('bg-emerald-100', 'text-emerald-700', 'border-emerald-200');
+            saveC1LessonBtn.disabled = true;
+        }
+        if (deleteC1LessonBtn) deleteC1LessonBtn.classList.remove('hidden');
+    }
+};
+
+window.deleteSavedC1Lesson = async function (id) {
+    if (!confirm('Are you sure you want to delete this lesson?')) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/c1/saved/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+            // Reload list
+            openSavedLessonsModal();
+
+            // If current lesson is the one deleted, reset state?
+            if (state.c1LessonData && state.c1LessonData.id === id) {
+                // Reset buttons
+                if (saveC1LessonBtn) {
+                    saveC1LessonBtn.disabled = false;
+                    saveC1LessonBtn.innerHTML = '<i data-lucide="bookmark" class="w-5 h-5"></i><span>Save Lesson</span>';
+                    saveC1LessonBtn.classList.add('text-emerald-600', 'bg-white', 'border-slate-200');
+                    saveC1LessonBtn.classList.remove('bg-emerald-100');
+                }
+                if (deleteC1LessonBtn) deleteC1LessonBtn.classList.add('hidden');
+                // Could verify if we want to clear the content too, but maybe overkill
+            }
+        }
+    } catch (e) {
+        console.error('Delete error', e);
+        alert('Failed to delete');
+    }
+};
+
+function renderC1Lesson(data) {
+    if (!c1Content) return;
+
+    // Reset UI: hide previous feedback/corrections
+    if (c1FeedbackArea) c1FeedbackArea.classList.add('hidden');
+    if (c1CorrectionsList) c1CorrectionsList.innerHTML = '';
+    if (c1OverallFeedback) c1OverallFeedback.textContent = '';
+
+    if (c1Topic) c1Topic.textContent = data.topic;
+
+    // Handle new bilingual structure or fallback to old structure
+    if (c1ExplanationEn && data.explanation_en) {
+        c1ExplanationEn.textContent = data.explanation_en;
+    } else if (c1ExplanationEn && data.explanation) {
+        // Fallback if API returns old format
+        c1ExplanationEn.textContent = data.explanation;
+    }
+
+    if (c1ExplanationEs && data.explanation_es) {
+        c1ExplanationEs.textContent = data.explanation_es;
+    } else if (c1ExplanationEs && !data.explanation_es) {
+        c1ExplanationEs.innerHTML = '<span class="text-slate-400 italic">Traducción no disponible para este ejemplo antiguo.</span>';
+    }
+
+    if (c1ExamplesContainer && Array.isArray(data.examples)) {
+        c1ExamplesContainer.innerHTML = data.examples.map(ex => `
+            <div class="p-4 bg-purple-50 rounded-xl border border-purple-100">
+                <p class="text-lg font-bold text-slate-800 mb-1">
+                    ${ex.english}
+                </p>
+                <p class="text-slate-500 text-sm flex items-center gap-2">
+                    <span class="text-xl leading-none">👉</span> ${ex.spanish}
+                </p>
+            </div>
+        `).join('');
+    } else if (c1ExamplesContainer) {
+        c1ExamplesContainer.innerHTML = '<p class="text-slate-500">No examples available.</p>';
+    }
+
+    if (c1ExercisesContainer && Array.isArray(data.exercises)) {
+        // Reset feedback
+        if (c1FeedbackArea) c1FeedbackArea.classList.add('hidden');
+        if (checkC1Btn) {
+            checkC1Btn.disabled = false;
+            checkC1Btn.innerHTML = '<span>Check Answers</span><i data-lucide="check-circle" class="w-5 h-5"></i>';
+        }
+
+        // Reset Save Button State when rendering new/loaded lesson
+        if (deleteC1LessonBtn) deleteC1LessonBtn.classList.add('hidden');
+        if (saveC1LessonBtn) {
+            saveC1LessonBtn.disabled = false;
+            saveC1LessonBtn.innerHTML = '<i data-lucide="bookmark" class="w-5 h-5"></i><span>Save Lesson</span>';
+            saveC1LessonBtn.classList.add('text-emerald-600', 'bg-white', 'border-slate-200');
+            saveC1LessonBtn.classList.remove('bg-emerald-100', 'text-emerald-700', 'border-emerald-200');
+        }
+
+        c1ExercisesContainer.innerHTML = data.exercises.map((ex, i) => {
+            const hasGaps = /_{2,}/.test(ex.question);
+            let questionHtml = ex.question;
+
+            if (hasGaps) {
+                questionHtml = ex.question.replace(/_{2,}/g, `
+                    <input type="text" id="c1-input-${i}"
+                        class="inline-input mx-1 px-2 py-1 border-b-2 border-slate-300 focus:border-purple-500 bg-white text-slate-800 font-bold outline-none transition-colors w-40 text-center"
+                        autocomplete="off">
+                `);
+            }
+
+            return `
+                <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+                    <div class="flex flex-col gap-3">
+                        <div class="flex items-start gap-3">
+                            <span class="mt-1 font-bold text-purple-400 text-sm">${i + 1}.</span>
+                            <p class="text-lg text-slate-700 leading-relaxed">${questionHtml}</p>
+                        </div>
+                        ${!hasGaps ? `
+                            <div class="pl-8">
+                                <input type="text" id="c1-input-${i}"
+                                    class="w-full px-4 py-2 border-2 border-slate-100 rounded-lg focus:border-purple-500 bg-slate-50 text-slate-800 font-medium outline-none transition-all"
+                                    placeholder="Type your answer here..."
+                                    autocomplete="off">
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    } else if (c1ExercisesContainer) {
+        c1ExercisesContainer.innerHTML = '<p class="text-slate-500">No exercises generated.</p>';
+    }
+
+    c1Content.classList.remove('hidden');
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+async function checkC1Exercises() {
+    if (!state.c1LessonData) return;
+
+    // Collect answers
+    const userAnswers = [];
+    let allFilled = true;
+
+    state.c1LessonData.exercises.forEach((ex, i) => {
+        const input = document.getElementById(`c1-input-${i}`);
+        if (input) {
+            userAnswers.push(input.value.trim());
+            if (!input.value.trim()) allFilled = false;
+        }
+    });
+
+    if (!allFilled) {
+        alert('Please complete all exercises before checking.');
+        return;
+    }
+
+    if (checkC1Btn) {
+        checkC1Btn.disabled = true;
+        checkC1Btn.innerHTML = '<span class="loader w-4 h-4 border-white"></span> Checking...';
+    }
+
+    // Show waiting activity popup
+    showWaitingActivity();
+
+    try {
+        const res = await fetch(`${API_BASE}/gemini/c1-correction`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                topic: state.c1LessonData.topic,
+                exercises: state.c1LessonData.exercises,
+                userAnswers: userAnswers
+            })
+        });
+
+        const data = await res.json();
+
+        // Hide waiting activity before showing results (optional, but cleaner if we rely on user to close it, or we can force close it)
+        // window.closeWaitingActivity(); 
+
+        renderC1Feedback(data);
+
+    } catch (error) {
+        console.error('Error checking C1 exercises:', error);
+        alert('Error checking answers. Please try again.');
+        if (checkC1Btn) {
+            checkC1Btn.disabled = false;
+            checkC1Btn.innerHTML = '<span>Check Answers</span><i data-lucide="check-circle" class="w-5 h-5"></i>';
+        }
+    }
+}
+
+function renderC1Feedback(data) {
+    if (!c1FeedbackArea || !c1CorrectionsList) return;
+
+    if (c1OverallFeedback) c1OverallFeedback.textContent = data.overallFeedback;
+
+    c1CorrectionsList.innerHTML = data.corrections.map((corr, i) => `
+        <div class="p-4 rounded-lg border ${corr.isCorrect ? 'bg-emerald-50 border-emerald-100' : 'bg-rose-50 border-rose-100'}">
+            <div class="flex items-center gap-2 mb-2">
+                <i data-lucide="${corr.isCorrect ? 'check' : 'x'}" class="w-5 h-5 ${corr.isCorrect ? 'text-emerald-600' : 'text-rose-500'}"></i>
+                <span class="font-bold ${corr.isCorrect ? 'text-emerald-700' : 'text-rose-700'}">Question ${i + 1}</span>
+            </div>
+            
+            ${!corr.isCorrect ? `
+                <div class="mb-2">
+                     <span class="text-xs font-bold text-slate-500 uppercase">Correct Answer:</span>
+                     <p class="text-emerald-700 font-bold">${corr.correctAnswer}</p>
+                </div>
+            ` : ''}
+
+            <p class="text-sm text-slate-600 italic">${corr.explanation}</p>
+        </div>
+    `).join('');
+
+    c1FeedbackArea.classList.remove('hidden');
+
+    // Scroll to feedback
+    c1FeedbackArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+// Event Listeners for Section 6
+if (newC1LessonBtn) newC1LessonBtn.addEventListener('click', loadC1Lesson);
+if (checkC1Btn) checkC1Btn.addEventListener('click', checkC1Exercises);
+if (backToMenuBtn6) backToMenuBtn6.addEventListener('click', () => showView('menu'));
+if (saveC1LessonBtn) saveC1LessonBtn.addEventListener('click', saveCurrentC1Lesson);
+if (loadC1Btn) loadC1Btn.addEventListener('click', openSavedLessonsModal);
+if (deleteC1LessonBtn) deleteC1LessonBtn.addEventListener('click', async () => {
+    if (state.c1LessonData && state.c1LessonData.id) {
+        await window.deleteSavedC1Lesson(state.c1LessonData.id);
+        // Reset UI after deletion of current
+        if (deleteC1LessonBtn) deleteC1LessonBtn.classList.add('hidden');
+        if (saveC1LessonBtn) {
+            saveC1LessonBtn.disabled = false;
+            saveC1LessonBtn.innerHTML = '<i data-lucide="bookmark" class="w-5 h-5"></i><span>Save Lesson</span>';
+            saveC1LessonBtn.classList.add('text-emerald-600', 'bg-white', 'border-slate-200');
+            saveC1LessonBtn.classList.remove('bg-emerald-100', 'text-emerald-700', 'border-emerald-200');
+        }
+        delete state.c1LessonData.id; // Remove id so we could save it again as new if we wanted
+    }
+});
+
+
 // --------------------- INITIALIZATION ---------------------
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -1631,4 +2112,10 @@ window.addEventListener('DOMContentLoaded', () => {
     showView('menu');
     // Preload activities in background
     setTimeout(preloadQuickActivities, 1000);
+
+    // Header Home Link
+    const appTitle = document.getElementById('app-title');
+    if (appTitle) {
+        appTitle.addEventListener('click', () => showView('menu'));
+    }
 });

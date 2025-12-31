@@ -1,0 +1,116 @@
+[
+    {
+        "id": "1766501237223",
+        "savedAt": "2025-12-23T14:47:17.225Z",
+        "topic": "Inversion with Negative Adverbials",
+        "explanation_en": "Inversion is a grammatical structure where the verb (or auxiliary verb) comes before the subject, similar to question formation. It's primarily used for emphasis or dramatic effect, especially after certain negative or restrictive adverbials placed at the beginning of a sentence. This formal structure often highlights the rarity or intensity of an action or situation.",
+        "explanation_es": "La inversión es una estructura gramatical donde el verbo (o auxiliar) precede al sujeto, similar a la formación de preguntas. Se utiliza principalmente para dar énfasis o un efecto dramático, especialmente después de ciertos adverbios negativos o restrictivos al inicio de una oración. Esta estructura formal a menudo destaca la rareza o intensidad de una acción o situación.",
+        "examples": [
+            {
+                "english": "Never before had I witnessed such a breathtaking display.",
+                "spanish": "Nunca antes había presenciado una exhibición tan impresionante."
+            },
+            {
+                "english": "Not only did they offer a discount, but they also included a free gift.",
+                "spanish": "No solo ofrecieron un descuento, sino que también incluyeron un regalo gratis."
+            },
+            {
+                "english": "Little did she know the challenges that lay ahead.",
+                "spanish": "Poco sabía ella los desafíos que le esperaban."
+            }
+        ],
+        "exercises": [
+            {
+                "question": "Rephrase the following sentence using inversion, starting with 'Rarely': 'I have rarely seen such dedication from an employee.'\nRarely _______________ such dedication from an employee."
+            },
+            {
+                "question": "Complete the sentence using inversion after 'Not until': 'He didn't realize the importance of saving until he faced financial hardship.'\nNot until he faced financial hardship _______________ the importance of saving."
+            },
+            {
+                "question": "Fill in the blank to complete the sentence using inversion with a modal verb: 'Under no circumstances _______________ you leave the premises unlocked.'"
+            }
+        ]
+    },
+    {
+        "id": "1767179498310",
+        "savedAt": "2025-12-31T11:11:38.310Z",
+        "topic": "Inversion for Emphasis and Formality",
+        "explanation_en": "Inversion is a sophisticated grammatical structure where the usual word order of a subject and verb is reversed, often placing the auxiliary verb before the subject, similar to question formation. While common in questions, at a C1 level, it's primarily used for emphasis, to create a more formal tone, or for dramatic and literary effect. It adds significant impact and elegance to your English.\n\nKey scenarios where inversion is employed:\n1.  **With Negative Adverbials at the start of a sentence:** This is the most common use. Words and phrases like 'Never', 'Rarely', 'Seldom', 'Hardly', 'Scarcely', 'No sooner', 'Little', 'Not only... but also', 'Under no circumstances', 'On no account', 'In no way', 'Only in this way' trigger inversion. The structure typically becomes: **Negative Adverbial + Auxiliary Verb + Subject + Main Verb**.\n    *   *Example:* 'Never have I seen such resilience.' (Instead of 'I have never seen...')\n2.  **After 'Only' + time/condition at the beginning of a clause:** Phrases like 'Only when', 'Only after', 'Only then', 'Only by', 'Only if' often lead to inversion in the main clause.\n    *   *Example:* 'Only after considerable debate did they reach a consensus.'\n3.  **In Conditional Sentences (formal/literary) without 'if':** For Type 1, 2, and 3 conditionals, 'if' can be omitted, and inversion of the auxiliary verb ('Should', 'Were', 'Had') and subject occurs.\n    *   *Example:* 'Had I known, I would have acted differently.' (Instead of 'If I had known...')\n4.  **With 'So' + adjective/adverb + be/do for emphasis:** Used to emphasize a degree or extent.\n    *   *Example:* 'So challenging was the task that many gave up.'\n5.  **With 'Such' + be for emphasis:** Often used in formal contexts.\n    *   *Example:* 'Such was the demand that production couldn't keep up.'\n\nRemember, when the main verb is in the simple present or simple past tense, 'do', 'does', or 'did' is used as the auxiliary verb.",
+        "explanation_es": "La inversión es una estructura gramatical sofisticada donde se invierte el orden habitual de un sujeto y un verbo, a menudo colocando el verbo auxiliar antes del sujeto, de manera similar a cómo se forman las preguntas. Aunque común en preguntas, en un nivel C1, se usa principalmente para enfatizar, para crear un tono más formal o para un efecto dramático y literario. Añade un impacto y una elegancia significativos a tu inglés.\n\nEscenarios clave donde se emplea la inversión:\n1.  **Con Adverbiales Negativos al comienzo de una oración:** Este es el uso más común. Palabras y frases como 'Never', 'Rarely', 'Seldom', 'Hardly', 'Scarcely', 'No sooner', 'Little', 'Not only... but also', 'Under no circumstances', 'On no account', 'In no way', 'Only in this way' desencadenan la inversión. La estructura generalmente se convierte en: **Adverbial Negativo + Verbo Auxiliar + Sujeto + Verbo Principal**.\n    *   *Ejemplo:* 'Never have I seen such resilience.' (En lugar de 'I have never seen...')\n2.  **Después de 'Only' + tiempo/condición al comienzo de una cláusula:** Frases como 'Only when', 'Only after', 'Only then', 'Only by', 'Only if' a menudo conducen a la inversión en la cláusula principal.\n    *   *Ejemplo:* 'Only after considerable debate did they reach a consensus.'\n3.  **En Oraciones Condicionales (formales/literarias) sin 'if':** Para los condicionales Tipo 1, 2 y 3, se puede omitir 'if', y se produce la inversión del verbo auxiliar ('Should', 'Were', 'Had') y el sujeto.\n    *   *Ejemplo:* 'Had I known, I would have acted differently.' (En lugar de 'If I had known...')\n4.  **Con 'So' + adjetivo/adverbio + be/do para énfasis:** Se utiliza para enfatizar un grado o extensión.\n    *   *Ejemplo:* 'So challenging was the task that many gave up.'\n5.  **Con 'Such' + be para énfasis:** A menudo utilizado en contextos formales.\n    *   *Ejemplo:* 'Such was the demand that production couldn't keep up.'\n\nRecuerda que cuando el verbo principal está en presente simple o pasado simple, se utiliza 'do', 'does' o 'did' como verbo auxiliar.",
+        "examples": [
+            {
+                "english": "Scarcely had the CEO finished his presentation when a torrent of challenging questions began.",
+                "spanish": "Apenas había terminado el CEO su presentación cuando comenzó un torrente de preguntas desafiantes.",
+                "note": "This example uses 'Scarcely' + past perfect inversion, a common and formal C1 structure. It emphasizes the immediate succession of events and elevates the sentence's register compared to 'The CEO had scarcely finished his presentation...'"
+            },
+            {
+                "english": "Not only did the team exceed all expectations, but also they set a new industry benchmark.",
+                "spanish": "No solo el equipo superó todas las expectativas, sino que también establecieron un nuevo referente en la industria.",
+                "note": "The phrase 'Not only... but also' with inversion ('did the team exceed') is a powerful C1 tool for highlighting two equally impressive achievements. It makes the statement more impactful and less mundane than 'The team not only exceeded...'"
+            },
+            {
+                "english": "Were the project to fail, the company's reputation would suffer irreparable damage.",
+                "spanish": "Si el proyecto fracasara, la reputación de la empresa sufriría un daño irreparable.",
+                "note": "This is a formal inversion in a Type 2 conditional, replacing 'If the project were to fail'. It signifies a high level of formality and hypothetical speculation, characteristic of C1 academic or business discourse."
+            }
+        ],
+        "exercises": [
+            {
+                "question": "Fill in the blank with the correct inverted form: '_____ (Rarely) have I encountered such intricate theoretical frameworks.'",
+                "answer": "Rarely",
+                "type": "fill_in_blank"
+            },
+            {
+                "question": "Rewrite the sentence using inversion, starting with 'Under no circumstances': 'You should not disclose confidential information to unauthorized personnel.'",
+                "answer": "Under no circumstances should you disclose confidential information to unauthorized personnel.",
+                "type": "rewrite"
+            },
+            {
+                "question": "Complete the sentence using inversion with 'Only then': 'He struggled with the complex algorithm for hours. Only then _____ (understand) the elegant solution.'",
+                "answer": "did he understand",
+                "type": "fill_in_blank"
+            }
+        ]
+    },
+    {
+        "id": "1767179739580",
+        "savedAt": "2025-12-31T11:15:39.580Z",
+        "topic": "Inversion with Negative Adverbials",
+        "explanation_en": "Inversion with negative adverbials is a sophisticated grammatical structure primarily used in formal contexts, literature, and for dramatic effect. It involves placing a negative adverbial (like *never, rarely, seldom, hardly, scarcely, no sooner, little, only when/if/after/then, not until/only/since*) at the beginning of a sentence, which then triggers a reversal of the subject and auxiliary verb, similar to the structure of a question. The main verb follows the subject. This structure serves to add emphasis to the negative aspect or condition being described, making the statement more impactful and formal than a standard declarative sentence. It's crucial to remember that we use an auxiliary verb (do/does/did, have/has/had, be/am/is/are/was/were, or a modal verb) before the subject. For instance, instead of 'I had never seen such a beautiful sight,' you would say 'Never had I seen such a beautiful sight.' This elevates the linguistic register and adds a sense of formality or drama.",
+        "explanation_es": "La inversión con adverbiales negativos es una estructura gramatical sofisticada que se utiliza principalmente en contextos formales, literatura y para crear un efecto dramático. Implica colocar un adverbial negativo (como *never, rarely, seldom, hardly, scarcely, no sooner, little, only when/if/after/then, not until/only/since*) al principio de una oración, lo que provoca una inversión del sujeto y el verbo auxiliar, similar a la estructura de una pregunta. El verbo principal sigue al sujeto. Esta estructura sirve para añadir énfasis al aspecto o condición negativa que se describe, haciendo la declaración más impactante y formal que una oración declarativa estándar. Es crucial recordar que usamos un verbo auxiliar (do/does/did, have/has/had, be/am/is/are/was/were, o un verbo modal) antes del sujeto. Por ejemplo, en lugar de 'Nunca había visto una vista tan hermosa', dirías 'Never had I seen such a beautiful sight'. Esto eleva el registro lingüístico y añade un sentido de formalidad o dramatismo.",
+        "examples": [
+            {
+                "english": "Hardly ever do we get the chance to witness such a rare celestial event.",
+                "spanish": "Casi nunca tenemos la oportunidad de presenciar un evento celestial tan raro.",
+                "note": "This uses 'Hardly ever,' a common negative adverbial phrase. The inversion 'do we get' instead of 'we get' adds formality and emphasis, typical of C1 usage, making the statement more striking."
+            },
+            {
+                "english": "Not until the final scene did the true motive of the villain become clear to the audience.",
+                "spanish": "No fue hasta la escena final que el verdadero motivo del villano se hizo claro para la audiencia.",
+                "note": "'Not until' creates a specific condition for the main clause. The inversion 'did the true motive... become clear' demonstrates advanced grammatical control and a sophisticated way to structure narrative, often found in academic or literary contexts."
+            },
+            {
+                "english": "Little did I imagine that the project would become so successful in such a short period.",
+                "spanish": "Poco imaginaba yo que el proyecto tendría tanto éxito en tan poco tiempo.",
+                "note": "'Little' as a negative adverbial (meaning 'not much' or 'hardly') followed by 'did I imagine' is a sophisticated and often literary way to express surprise or understatement, requiring a strong grasp of inverted structures for enhanced expression."
+            }
+        ],
+        "exercises": [
+            {
+                "question": "Rewrite the following sentence using inversion with a negative adverbial: 'I had never heard such an absurd excuse before.'",
+                "answer": "Never had I heard such an absurd excuse before.",
+                "type": "rewrite"
+            },
+            {
+                "question": "Fill in the blank with the correct auxiliary verb: 'Scarcely _____ the bell rung when the students rushed out of the classroom.' (Hint: The bell had just rung)",
+                "answer": "had",
+                "type": "fill_in_blank"
+            },
+            {
+                "question": "Rewrite the sentence using inversion, starting with 'Not until...': 'We didn't realize the extent of the damage until the morning.'",
+                "answer": "Not until the morning did we realize the extent of the damage.",
+                "type": "rewrite"
+            }
+        ]
+    }
+]
