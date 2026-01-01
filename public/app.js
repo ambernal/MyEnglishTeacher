@@ -23,7 +23,9 @@ const SECTION_SUBTITLES = {
     '2': 'Expande tu léxico C1 con palabras avanzadas y phrasal verbs.',
     '3': 'Domina estructuras complejas como inversiones, modales y consistencia de tiempos.',
     '5': 'Mejora tu entonación y fluidez con ejercicios de audio enfocados.',
-    '6': 'Lecciones profundas de gramática y estilo con ejercicios interactivos.'
+    '6': 'Lecciones profundas de gramática y estilo con ejercicios interactivos.',
+    '7': 'Domina el idioma viviendo una historia: usa gramática C1 para avanzar.',
+    '8': 'Aprende a expresar tus ideas en niveles B2 y C1 de inglés.'
 };
 
 // DOM Elements
@@ -70,7 +72,8 @@ function showView(viewName) {
         '3': 'section-2-view',
         '5': 'section-3-view',
         '6': 'c1-improvement-section',
-        '7': 'section-stories-view'
+        '7': 'section-stories-view',
+        '8': 'section-how-to-tell-view'
     };
 
     const targetId = viewMap[viewName] || viewName;
@@ -84,7 +87,8 @@ function showView(viewName) {
         'exercise-section',
         'feedback-section',
         'c1-improvement-section',
-        'section-stories-view'
+        'section-stories-view',
+        'section-how-to-tell-view'
     ];
 
     // Hide all views
@@ -191,6 +195,8 @@ const appSections = [
     { id: 4, title: "Writing Practice (C1)", description: "Genera ensayos y recibe feedback estructurado sobre estilo y cohesión.", icon: "feather" },
     { id: 5, title: "Pronunciation Trainer", description: "Mejora tu entonación y fluidez con ejercicios de audio enfocados.", icon: "megaphone" },
     { id: 6, title: "Improve your C1 Level", description: "Lecciones profundas de gramática y estilo con ejercicios interactivos.", icon: "zap" },
+    { id: 7, title: "Interactive Stories", description: "Domina el idioma viviendo una historia: usa gramática C1 para avanzar.", icon: "book" },
+    { id: 8, title: "How to tell this...", description: "Traduce tus ideas a niveles B2 y C1 de forma inteligente.", icon: "languages" },
 ];
 
 function renderMenu() {
@@ -235,6 +241,12 @@ function renderMenu() {
                 setTimeout(() => {
                     loadC1Lesson();
                 }, 100);
+            } else if (sectionId === 7) {
+                // Interactive Stories
+                showView('7');
+            } else if (sectionId === 8) {
+                // How to tell this...
+                showView('8');
             } else {
                 alert(`Sección ${sectionId}: ${appSections.find(s => s.id === sectionId).title}. Contenido no implementado aún.`);
             }
@@ -2103,6 +2115,303 @@ if (deleteC1LessonBtn) deleteC1LessonBtn.addEventListener('click', async () => {
         delete state.c1LessonData.id; // Remove id so we could save it again as new if we wanted
     }
 });
+
+
+// --------------------- SECTION 7: INTERACTIVE STORIES (New) ---------------------
+
+const storyLoader = document.getElementById('story-loader');
+const storyContent = document.getElementById('story-content');
+const storySegmentsWrapper = document.getElementById('story-segments-wrapper');
+const storyConstraintEl = document.getElementById('story-constraint');
+const storyActionInput = document.getElementById('story-action-input');
+const continueStoryBtn = document.getElementById('continue-story-btn');
+const storyFeedbackEl = document.getElementById('story-feedback');
+const storyCorrectionArea = document.getElementById('story-correction-area');
+const storyCorrectionText = document.getElementById('story-correction-text');
+const storyCorrectedSentence = document.getElementById('story-corrected-sentence');
+const storyCorrectedText = document.getElementById('story-corrected-text');
+const storyC1Annotations = document.getElementById('story-c1-annotations');
+const storyStructuresList = document.getElementById('story-structures-list');
+const storyVocabularyList = document.getElementById('story-vocabulary-list');
+const restartStoryBtn = document.getElementById('restart-story-btn');
+const backToMenuBtn7 = document.getElementById('back-to-menu-btn-7');
+
+async function initializeInteractiveStory() {
+    console.log('📖 initializeInteractiveStory called');
+
+    // Show loader, hide content
+    if (storyLoader) storyLoader.classList.remove('hidden');
+    if (storyContent) storyContent.classList.add('hidden');
+    if (storyFeedbackEl) storyFeedbackEl.classList.add('hidden');
+    if (storyCorrectionArea) storyCorrectionArea.classList.add('hidden');
+    if (storyC1Annotations) storyC1Annotations.classList.add('hidden');
+
+    // Clear previous story
+    if (storySegmentsWrapper) storySegmentsWrapper.innerHTML = '';
+
+    try {
+        const res = await fetch(`${API_BASE}/stories/start`, { method: 'POST' });
+        if (!res.ok) throw new Error('Failed to start story');
+
+        const data = await res.json();
+        state.storyContext = data.story_segment;
+        state.storyConstraint = data.grammar_constraint;
+        state.storyTurnCount = 0;
+
+        // Render initial story segment
+        addStorySegment(data.story_segment, 'narrator');
+        updateStoryConstraint(data.grammar_constraint);
+
+        if (storyContent) storyContent.classList.remove('hidden');
+
+    } catch (error) {
+        console.error('Error starting story:', error);
+        alert('Could not start story. Please try again.');
+    } finally {
+        if (storyLoader) storyLoader.classList.add('hidden');
+    }
+}
+
+function addStorySegment(text, type = 'narrator', annotations = null) {
+    if (!storySegmentsWrapper) return;
+
+    const segment = document.createElement('div');
+    segment.className = 'animate-fade-in';
+
+    if (type === 'narrator') {
+        segment.innerHTML = `
+            <div class="text-xl text-slate-800 leading-relaxed font-serif italic">
+                ${text}
+            </div>
+        `;
+        if (annotations) {
+            segment.innerHTML += `
+                <div class="mt-3 flex flex-wrap gap-2">
+                    ${annotations.structures.map(s => `<span class="px-2 py-1 text-xs font-bold bg-purple-100 text-purple-700 rounded">${s}</span>`).join('')}
+                    ${annotations.vocabulary.map(v => `<span class="px-2 py-1 text-xs font-bold bg-indigo-100 text-indigo-700 rounded">${v}</span>`).join('')}
+                </div>
+            `;
+        }
+    } else if (type === 'user') {
+        segment.innerHTML = `
+            <div class="pl-4 border-l-4 border-brand-400">
+                <span class="text-xs font-bold text-brand-600 uppercase tracking-wider">Your Action:</span>
+                <p class="text-lg text-slate-700 mt-1 font-medium">${text}</p>
+            </div>
+        `;
+    }
+
+    storySegmentsWrapper.appendChild(segment);
+
+    // Scroll to bottom of story container
+    const container = document.getElementById('story-history-container');
+    if (container) {
+        container.scrollTop = container.scrollHeight;
+    }
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function updateStoryConstraint(constraint) {
+    if (storyConstraintEl) storyConstraintEl.textContent = constraint;
+    if (storyActionInput) storyActionInput.value = '';
+    if (storyFeedbackEl) storyFeedbackEl.classList.add('hidden');
+}
+
+function showStoryCorrection(data) {
+    if (!storyCorrectionArea) return;
+
+    // Update correction feedback text
+    if (storyCorrectionText) {
+        storyCorrectionText.textContent = data.correction_feedback || '';
+    }
+
+    // Show corrected sentence if different from original
+    if (data.corrected_sentence && storyCorrectedText && storyCorrectedSentence) {
+        storyCorrectedText.textContent = data.corrected_sentence;
+        if (!data.grammar_correct) {
+            storyCorrectedSentence.classList.remove('hidden');
+        } else {
+            storyCorrectedSentence.classList.add('hidden');
+        }
+    }
+
+    // Update icon color based on correctness
+    const icon = storyCorrectionArea.querySelector('i[data-lucide]');
+    const iconContainer = storyCorrectionArea.querySelector('.p-2.rounded-lg');
+    const heading = storyCorrectionArea.querySelector('h4');
+
+    if (data.grammar_correct) {
+        storyCorrectionArea.className = 'bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-6 border border-emerald-100 animate-fade-in';
+        if (icon) icon.className = 'w-5 h-5 text-emerald-600';
+        if (heading) heading.className = 'font-bold text-emerald-800 mb-1';
+    } else {
+        storyCorrectionArea.className = 'bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-100 animate-fade-in';
+        if (icon) icon.className = 'w-5 h-5 text-amber-600';
+        if (heading) heading.className = 'font-bold text-amber-800 mb-1';
+    }
+
+    storyCorrectionArea.classList.remove('hidden');
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function showC1Annotations(data) {
+    if (!storyC1Annotations) return;
+
+    // Render structures
+    if (storyStructuresList && data.c1_structures_used) {
+        storyStructuresList.innerHTML = data.c1_structures_used.map(s =>
+            `<li class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 bg-purple-500 rounded-full"></span>
+                ${s}
+            </li>`
+        ).join('');
+    }
+
+    // Render vocabulary
+    if (storyVocabularyList && data.c1_vocabulary_used) {
+        storyVocabularyList.innerHTML = data.c1_vocabulary_used.map(v =>
+            `<li class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 bg-indigo-500 rounded-full"></span>
+                <strong>${v}</strong>
+            </li>`
+        ).join('');
+    }
+
+    storyC1Annotations.classList.remove('hidden');
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+async function continueStory() {
+    const userAction = storyActionInput.value.trim();
+    if (!userAction) {
+        alert('Please describe your next move.');
+        return;
+    }
+
+    continueStoryBtn.disabled = true;
+    continueStoryBtn.innerHTML = '<span class="loader border-white/30 border-b-white w-5 h-5"></span> Continuing...';
+
+    // Hide previous feedback
+    if (storyCorrectionArea) storyCorrectionArea.classList.add('hidden');
+    if (storyC1Annotations) storyC1Annotations.classList.add('hidden');
+
+    try {
+        const res = await fetch(`${API_BASE}/stories/continue`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                previousContext: state.storyContext,
+                userAction: userAction,
+                grammarConstraint: state.storyConstraint
+            })
+        });
+
+        const data = await res.json();
+        console.log('📖 Story continuation response:', data);
+
+        // Add user's action to the story display
+        addStorySegment(userAction, 'user');
+
+        // Show grammar correction feedback
+        showStoryCorrection(data);
+
+        // Add the AI story continuation with annotations
+        const annotations = {
+            structures: data.c1_structures_used || [],
+            vocabulary: data.c1_vocabulary_used || []
+        };
+        addStorySegment(data.story_continuation, 'narrator', annotations);
+
+        // Show C1 learning annotations in detail panel
+        showC1Annotations(data);
+
+        // Update state
+        state.storyContext += ` ${userAction} ${data.story_continuation}`;
+        state.storyConstraint = data.new_grammar_constraint;
+        state.storyTurnCount = (state.storyTurnCount || 0) + 1;
+
+        // Update constraint for next turn
+        updateStoryConstraint(data.new_grammar_constraint);
+
+        // Hide error feedback
+        if (storyFeedbackEl) storyFeedbackEl.classList.add('hidden');
+
+    } catch (error) {
+        console.error('Error continuing story:', error);
+        if (storyFeedbackEl) {
+            storyFeedbackEl.textContent = 'Error communicating with the storyteller. Please try again.';
+            storyFeedbackEl.classList.remove('hidden');
+        }
+    } finally {
+        continueStoryBtn.disabled = false;
+        continueStoryBtn.innerHTML = '<i data-lucide="play" class="w-5 h-5"></i><span>Continue the Story</span>';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+}
+
+// Event Listeners for Section 7
+if (continueStoryBtn) continueStoryBtn.addEventListener('click', continueStory);
+if (restartStoryBtn) restartStoryBtn.addEventListener('click', initializeInteractiveStory);
+if (backToMenuBtn7) backToMenuBtn7.addEventListener('click', () => showView('menu'));
+
+
+
+// --------------------- SECTION 8: HOW TO TELL THIS... (New) ---------------------
+
+const translateInput = document.getElementById('translate-input');
+const translateBtn = document.getElementById('translate-btn');
+const translateResults = document.getElementById('translate-results');
+const translateB2Text = document.getElementById('translate-b2-text');
+const translateB2Expl = document.getElementById('translate-b2-explanation');
+const translateC1Text = document.getElementById('translate-c1-text');
+const translateC1Expl = document.getElementById('translate-c1-explanation');
+const backToMenuBtn8 = document.getElementById('back-to-menu-btn-8');
+
+async function translatePhrase() {
+    const phrase = translateInput.value.trim();
+    if (!phrase) {
+        alert('Por favor, introduce una frase en español.');
+        return;
+    }
+
+    translateBtn.disabled = true;
+    translateBtn.innerHTML = '<span class="loader border-white/30 border-b-white w-5 h-5"></span> Traduciendo...';
+
+    // Show waiting activity popup
+    showWaitingActivity();
+
+    try {
+        const res = await fetch(`${API_BASE}/translate-levels`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phrase })
+        });
+
+        if (!res.ok) throw new Error('Error en la traducción');
+
+        const data = await res.json();
+
+        if (translateB2Text) translateB2Text.textContent = data.b2.translation;
+        if (translateB2Expl) translateB2Expl.textContent = data.b2.explanation;
+        if (translateC1Text) translateC1Text.textContent = data.c1.translation;
+        if (translateC1Expl) translateC1Expl.textContent = data.c1.explanation;
+
+        if (translateResults) translateResults.classList.remove('hidden');
+
+    } catch (error) {
+        console.error('Translation error:', error);
+        alert('Hubo un error al obtener la traducción. Inténtalo de nuevo.');
+    } finally {
+        translateBtn.disabled = false;
+        translateBtn.innerHTML = '<i data-lucide="sparkles" class="w-5 h-5"></i><span>Traducir a niveles B2 y C1</span>';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+}
+
+// Event Listeners for Section 8
+if (translateBtn) translateBtn.addEventListener('click', translatePhrase);
+if (backToMenuBtn8) backToMenuBtn8.addEventListener('click', () => showView('menu'));
 
 
 // --------------------- INITIALIZATION ---------------------

@@ -107,18 +107,25 @@ router.post('/api/stories/continue', async (req, res) => {
         User's Action: "${userAction}"
         Required Grammar: "${grammarConstraint}"
 
+        You are a master storyteller (Mystery/Thriller genre) and an advanced English teacher for C1 learners.
+
         Task:
-        1. Evaluate if the User's Action meaningfuly uses the Required Grammar. 
-        2. Evaluate if the action makes sense in the story.
-        3. If valid, continue the story (2-3 sentences max) and set a NEW C1 grammar constraint.
-        4. If invalid (grammar not used or wrong), provide feedback.
+        1. ALWAYS check if the User's Action correctly uses the Required Grammar structure.
+        2. ALWAYS provide corrected version of the user's action if there are any grammar/style issues, or confirm it's correct.
+        3. ALWAYS continue the story with a new paragraph (2-3 sentences), incorporating the user's action into the narrative.
+        4. In your story continuation, USE specific C1-level grammar structures (inversions, participle clauses, cleft sentences, subjunctive, advanced conditionals, etc.) and C1-level vocabulary.
+        5. EXPLICITLY list which C1 grammar structures and vocabulary you used in your continuation.
+        6. Set a NEW C1 grammar constraint for the user's next action.
 
         Output JSON ONLY:
         {
-            "is_correct": boolean,
-            "feedback": "Why it was wrong (if false)",
-            "story_segment": "Next part of the story (if true)",
-            "new_grammar_constraint": "New constraint (if true)"
+            "grammar_correct": true/false,
+            "correction_feedback": "Explanation of the grammar usage. If incorrect, explain why and show the corrected sentence. If correct, briefly praise the usage.",
+            "corrected_sentence": "The corrected version of user's sentence (or same if already correct)",
+            "story_continuation": "Your 2-3 sentence continuation of the story incorporating the user's action...",
+            "c1_structures_used": ["List of C1 grammar structures used in your continuation, e.g., 'Inversion with negative adverb', 'Past participle clause'"],
+            "c1_vocabulary_used": ["List of C1-level words/phrases used, e.g., 'ominous', 'to loom', 'eerily silent'"],
+            "new_grammar_constraint": "The new C1 grammar structure the user must use next (e.g., 'Cleft Sentence', 'Subjunctive Mood')"
         }
         `;
 

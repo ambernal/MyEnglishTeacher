@@ -15,6 +15,7 @@ const section3Router = require('./routes/section3');
 const section5Router = require('./routes/section5');
 const section6Router = require('./routes/section6');
 const section7Router = require('./routes/section7');
+const section8Router = require('./routes/section8');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -54,6 +55,7 @@ app.use(section3Router);
 app.use(section5Router);
 app.use(section6Router);
 app.use(section7Router);
+app.use(section8Router);
 
 
 app.listen(port, () => {
