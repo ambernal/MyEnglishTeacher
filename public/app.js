@@ -73,7 +73,8 @@ function showView(viewName) {
         '5': 'section-3-view',
         '6': 'c1-improvement-section',
         '7': 'section-stories-view',
-        '8': 'section-how-to-tell-view'
+        '8': 'section-how-to-tell-view',
+        '9': 'section-writing-practice-view'
     };
 
     const targetId = viewMap[viewName] || viewName;
@@ -88,7 +89,8 @@ function showView(viewName) {
         'feedback-section',
         'c1-improvement-section',
         'section-stories-view',
-        'section-how-to-tell-view'
+        'section-how-to-tell-view',
+        'section-writing-practice-view'
     ];
 
     // Hide all views
@@ -98,21 +100,26 @@ function showView(viewName) {
     });
 
     // Handle nested views for Section 1 specifically
-    if (viewName === 'section-1' || viewName === 'exercises') {
+    if (viewName === 'section-1' || viewName === 'exercises' || viewName === 'feedback') {
         const sec1 = document.getElementById('section-1-view');
         if (sec1) sec1.classList.remove('hidden');
 
+        // Hide all section-1 sub-views first
+        const topicSection = document.getElementById('topic-section');
+        const exSection = document.getElementById('exercise-section');
+        const feedbackSection = document.getElementById('feedback-section');
+        if (topicSection) topicSection.classList.add('hidden');
+        if (exSection) exSection.classList.add('hidden');
+        if (feedbackSection) feedbackSection.classList.add('hidden');
+
+        // Show the appropriate sub-view
         if (viewName === 'exercises') {
-            const exSection = document.getElementById('exercise-section');
-            const topicSection = document.getElementById('topic-section');
             if (exSection) exSection.classList.remove('hidden');
-            if (topicSection) topicSection.classList.add('hidden');
+        } else if (viewName === 'feedback') {
+            if (feedbackSection) feedbackSection.classList.remove('hidden');
         } else {
             // Default section-1 view (topic)
-            const topicSection = document.getElementById('topic-section');
-            const exSection = document.getElementById('exercise-section');
             if (topicSection) topicSection.classList.remove('hidden');
-            if (exSection) exSection.classList.add('hidden');
         }
     }
     // Handle standard top-level views
@@ -192,11 +199,12 @@ const appSections = [
     { id: 1, title: "Daily Topic & Exercises", description: "Practica comprensión, vocabulario y gramática basada en tu DAG de Notion.", icon: "book-open" },
     { id: 2, title: "Vocabulary Deep Dive", description: "Expande tu léxico C1 con palabras avanzadas y phrasal verbs.", icon: "layers" },
     { id: 3, title: "Grammar Challenge", description: "Domina estructuras comunes como tipicos Locations, Follow-ups, Transition Phrases, Fillers and prepositional Phrases", icon: "dna" },
-    { id: 4, title: "Writing Practice (C1)", description: "Genera ensayos y recibe feedback estructurado sobre estilo y cohesión.", icon: "feather" },
+    { id: 4, title: "TBD", description: "Genera ensayos y recibe feedback estructurado sobre estilo y cohesión.", icon: "feather" },
     { id: 5, title: "Pronunciation Trainer", description: "Mejora tu entonación y fluidez con ejercicios de audio enfocados.", icon: "megaphone" },
     { id: 6, title: "Improve your C1 Level", description: "Lecciones profundas de gramática y estilo con ejercicios interactivos.", icon: "zap" },
     { id: 7, title: "Interactive Stories", description: "Domina el idioma viviendo una historia: usa gramática C1 para avanzar.", icon: "book" },
     { id: 8, title: "How to tell this...", description: "Traduce tus ideas a niveles B2 y C1 de forma inteligente.", icon: "languages" },
+    { id: 9, title: "Writing Practice", description: "Escribe textos usando phrasal verbs y recibe feedback de nivel C1.", icon: "pen-tool" },
 ];
 
 function renderMenu() {
@@ -247,6 +255,12 @@ function renderMenu() {
             } else if (sectionId === 8) {
                 // How to tell this...
                 showView('8');
+            } else if (sectionId === 9) {
+                // Writing Practice
+                showView('9');
+                setTimeout(() => {
+                    loadWritingPractice();
+                }, 100);
             } else {
                 alert(`Sección ${sectionId}: ${appSections.find(s => s.id === sectionId).title}. Contenido no implementado aún.`);
             }
@@ -344,6 +358,7 @@ function renderTopic(topic) {
 
     let htmlContent = '';
     let plainTextContent = '';
+    let headingsContent = `Topic: ${topic.title}\n`; // Only store headings for AI context
 
     if (topic.content && Array.isArray(topic.content)) {
         htmlContent = topic.content.map(block => {
@@ -363,10 +378,13 @@ function renderTopic(topic) {
 
                 switch (type) {
                     case 'heading_1':
+                        headingsContent += `H1: ${text}\n`;
                         return `<h3 class="text-2xl font-bold text-slate-800 mb-4">${text}</h3>`;
                     case 'heading_2':
+                        headingsContent += `H2: ${text}\n`;
                         return `<h4 class="text-xl font-bold text-slate-700 mb-3">${text}</h4>`;
                     case 'heading_3':
+                        headingsContent += `H3: ${text}\n`;
                         return `<h5 class="text-lg font-semibold text-slate-600 mb-2">${text}</h5>`;
                     case 'bulleted_list_item':
                         return `<div class="ml-4 mb-1">• ${text}</div>`;
@@ -421,7 +439,7 @@ function renderTopic(topic) {
     `;
 
     if (typeof lucide !== 'undefined') lucide.createIcons();
-    state.currentTopic.textContent = plainTextContent;
+    state.currentTopic.textContent = headingsContent; // Only send headings to reduce tokens
 }
 
 // --------------------- EXERCISE GENERATION ---------------------
@@ -918,7 +936,11 @@ if (backToMenuBtn2) backToMenuBtn2.addEventListener('click', () => showView('men
 // --------------------- SECTION 3: PRONUNCIATION TRAINER ---------------------
 
 const modeGeminiBtn = document.getElementById('mode-gemini-btn');
+const modeCustomBtn = document.getElementById('mode-custom-btn');
 const modeListBtn = document.getElementById('mode-list-btn');
+const customWordContainer = document.getElementById('custom-word-container');
+const customWordInput = document.getElementById('custom-word-input');
+const customWordSubmitBtn = document.getElementById('custom-word-submit-btn');
 const wordListContainer = document.getElementById('word-list-container');
 const wordListGrid = document.getElementById('word-list-grid');
 const currentWordDisplay = document.getElementById('current-word-display');
@@ -962,22 +984,86 @@ async function initializePronunciationTrainer() {
     loadWord();
 }
 
+// Helper to set button active/inactive states
+function setModeButtonActive(btn, isActive) {
+    if (!btn) return;
+    if (isActive) {
+        btn.classList.remove('bg-white', 'border-2', 'border-slate-200', 'text-slate-600');
+        btn.classList.add('bg-brand-600', 'text-white');
+    } else {
+        btn.classList.remove('bg-brand-600', 'text-white');
+        btn.classList.add('bg-white', 'border-2', 'border-slate-200', 'text-slate-600');
+    }
+}
+
 function toggleMode(mode) {
     state.pronunciationMode = mode;
 
+    // Update button states
+    setModeButtonActive(modeGeminiBtn, mode === 'gemini');
+    setModeButtonActive(modeCustomBtn, mode === 'custom');
+    setModeButtonActive(modeListBtn, mode === 'list');
+
+    // Hide all containers first
+    if (wordListContainer) wordListContainer.classList.add('hidden');
+    if (customWordContainer) customWordContainer.classList.add('hidden');
+
+    // Show relevant container and handle action
     if (mode === 'gemini') {
-        modeGeminiBtn.classList.remove('bg-white', 'border-2', 'border-slate-200', 'text-slate-600');
-        modeGeminiBtn.classList.add('bg-brand-600', 'text-white');
-        modeListBtn.classList.remove('bg-brand-600', 'text-white');
-        modeListBtn.classList.add('bg-white', 'border-2', 'border-slate-200', 'text-slate-600');
-        wordListContainer.classList.add('hidden');
         loadWord();
-    } else {
-        modeListBtn.classList.remove('bg-white', 'border-2', 'border-slate-200', 'text-slate-600');
-        modeListBtn.classList.add('bg-brand-600', 'text-white');
-        modeGeminiBtn.classList.remove('bg-brand-600', 'text-white');
-        modeGeminiBtn.classList.add('bg-white', 'border-2', 'border-slate-200', 'text-slate-600');
-        wordListContainer.classList.remove('hidden');
+    } else if (mode === 'custom') {
+        if (customWordContainer) customWordContainer.classList.remove('hidden');
+        if (customWordInput) {
+            customWordInput.value = '';
+            customWordInput.focus();
+        }
+    } else if (mode === 'list') {
+        if (wordListContainer) wordListContainer.classList.remove('hidden');
+    }
+}
+
+async function loadCustomWord() {
+    const word = customWordInput ? customWordInput.value.trim() : '';
+
+    if (!word) {
+        alert('Por favor, escribe una palabra para practicar.');
+        return;
+    }
+
+    if (wordLoader) wordLoader.classList.remove('hidden');
+    if (wordContent) wordContent.classList.add('hidden');
+    if (recordingControls) recordingControls.classList.add('hidden');
+    if (analyzeContainer) analyzeContainer.classList.add('hidden');
+    if (pronunciationFeedbackSection) pronunciationFeedbackSection.classList.add('hidden');
+    if (customWordContainer) customWordContainer.classList.add('hidden');
+
+    // Reset audio
+    state.audioBlob = null;
+    if (audioPreview) audioPreview.classList.add('hidden');
+
+    try {
+        console.log('✨ Fetching custom word info from Gemini:', word);
+        const res = await fetch(`${API_BASE}/pronunciation/custom-word`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ word })
+        });
+
+        if (!res.ok) {
+            const errorData = await res.json();
+            throw new Error(errorData.error || 'Failed to load word');
+        }
+
+        const data = await res.json();
+        state.currentWord = data;
+        displayWord(data);
+
+    } catch (error) {
+        console.error('❌ Error loading custom word:', error);
+        alert(`Error: ${error.message}`);
+        if (customWordContainer) customWordContainer.classList.remove('hidden');
+    } finally {
+        if (wordLoader) wordLoader.classList.add('hidden');
     }
 }
 
@@ -1318,7 +1404,14 @@ function playCorrectPronunciation() {
 
 // Event Listeners for Section 3
 if (modeGeminiBtn) modeGeminiBtn.addEventListener('click', () => toggleMode('gemini'));
+if (modeCustomBtn) modeCustomBtn.addEventListener('click', () => toggleMode('custom'));
 if (modeListBtn) modeListBtn.addEventListener('click', () => toggleMode('list'));
+if (customWordSubmitBtn) customWordSubmitBtn.addEventListener('click', loadCustomWord);
+if (customWordInput) {
+    customWordInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') loadCustomWord();
+    });
+}
 if (recordBtn) recordBtn.addEventListener('click', startRecording);
 if (stopBtn) stopBtn.addEventListener('click', stopRecording);
 if (analyzeBtn) analyzeBtn.addEventListener('click', analyzePronunciation);
@@ -1685,7 +1778,7 @@ function showWaitingActivity() {
                         <button id="deep-dive-btn" class="w-full bg-indigo-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-indigo-700 transition-all mb-3 flex items-center justify-center gap-2 group">
                             <i data-lucide="layers" class="w-5 h-5"></i>
                             <span>Study in Deep Dive</span>
-                            <i data-lucide="arrow-right" class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                            <i data-lucide="external-link" class="w-4 h-4 opacity-70"></i>
                         </button>
 
                         <p class="text-xs text-slate-400 italic">Processing your results...</p>
@@ -1700,11 +1793,19 @@ function showWaitingActivity() {
         document.body.insertAdjacentHTML('beforeend', modalHtml);
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
-        // Add event listener for Deep Dive
+        // Add event listener for Deep Dive - Opens in new tab
         document.getElementById('deep-dive-btn').addEventListener('click', () => {
+            // Store activity data for the new tab to pickup
+            localStorage.setItem('deepDiveAutoLoad', JSON.stringify({
+                verb: activity.verb,
+                definition: activity.definition
+            }));
+
+            // Open in new tab
+            window.open(window.location.origin + window.location.pathname + '?section=2&autoload=deepdive', '_blank');
+
+            // Close the popup in current tab
             closeWaitingActivity();
-            showView('2'); // View 2 is Vocabulary Deep Dive
-            loadVocabularyDeepDive(activity.verb, activity.definition);
         });
     } catch (e) {
         console.error('Error showing waiting activity:', e);
@@ -2414,6 +2515,218 @@ if (translateBtn) translateBtn.addEventListener('click', translatePhrase);
 if (backToMenuBtn8) backToMenuBtn8.addEventListener('click', () => showView('menu'));
 
 
+// --------------------- SECTION 9: WRITING PRACTICE ---------------------
+
+const writingPracticeLoader = document.getElementById('writing-practice-loader');
+const writingPracticeContent = document.getElementById('writing-practice-content');
+const writingTopicText = document.getElementById('writing-topic-text');
+const writingPhrasalVerbsList = document.getElementById('writing-phrasal-verbs-list');
+const writingPracticeInput = document.getElementById('writing-practice-input');
+const writingWordCount = document.getElementById('writing-word-count');
+const submitWritingBtn = document.getElementById('submit-writing-btn');
+const writingFeedbackSection = document.getElementById('writing-feedback-section');
+const writingScore = document.getElementById('writing-score');
+const writingGrammarErrorsContainer = document.getElementById('writing-grammar-errors-container');
+const writingImprovementsContainer = document.getElementById('writing-improvements-container');
+const writingPhrasalUsageContent = document.getElementById('writing-phrasal-usage-content');
+const writingGeneralFeedback = document.getElementById('writing-general-feedback');
+const newWritingPracticeBtn = document.getElementById('new-writing-practice-btn');
+const backToMenuBtn9 = document.getElementById('back-to-menu-btn-9');
+
+// State for Section 9
+let writingPracticeState = {
+    topic: '',
+    phrasalVerbs: []
+};
+
+async function loadWritingPractice() {
+    console.log('🔄 loadWritingPractice called');
+
+    if (writingPracticeLoader) writingPracticeLoader.classList.remove('hidden');
+    if (writingPracticeContent) writingPracticeContent.classList.add('hidden');
+    if (writingFeedbackSection) writingFeedbackSection.classList.add('hidden');
+    if (writingPracticeInput) writingPracticeInput.value = '';
+    if (writingWordCount) writingWordCount.textContent = '0 words';
+
+    try {
+        const res = await fetch(`${API_BASE}/writing-practice/topic`);
+        if (!res.ok) throw new Error('Failed to fetch writing practice topic');
+
+        const data = await res.json();
+        console.log('✅ Writing practice data:', data);
+
+        writingPracticeState.topic = data.topic;
+        writingPracticeState.phrasalVerbs = data.phrasalVerbs;
+
+        // Render topic
+        if (writingTopicText) {
+            writingTopicText.textContent = data.topic;
+        }
+
+        // Render phrasal verbs
+        if (writingPhrasalVerbsList) {
+            writingPhrasalVerbsList.innerHTML = data.phrasalVerbs.map(pv => `
+                <div class="bg-white p-4 rounded-xl border border-slate-200 hover:border-brand-400 hover:shadow-lg transition-all">
+                    <div class="flex justify-between items-start mb-2">
+                        <strong class="text-slate-900 font-bold text-lg">${pv.verb}</strong>
+                        <span class="bg-slate-100 text-slate-500 text-xs px-2 py-1 rounded">Phrasal Verb</span>
+                    </div>
+                    <p class="text-sm text-slate-600">${pv.definition}</p>
+                </div>
+            `).join('');
+        }
+
+        if (writingPracticeContent) writingPracticeContent.classList.remove('hidden');
+
+    } catch (error) {
+        console.error('❌ Error loading writing practice:', error);
+        if (writingTopicText) {
+            writingTopicText.textContent = 'Error loading topic. Please try again.';
+        }
+    } finally {
+        if (writingPracticeLoader) writingPracticeLoader.classList.add('hidden');
+    }
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+// Word count update
+if (writingPracticeInput) {
+    writingPracticeInput.addEventListener('input', () => {
+        const text = writingPracticeInput.value.trim();
+        const words = text ? text.split(/\s+/).length : 0;
+        if (writingWordCount) {
+            writingWordCount.textContent = `${words} words`;
+            writingWordCount.className = words >= 50
+                ? 'text-right text-sm text-emerald-600 mt-2 font-medium'
+                : 'text-right text-sm text-slate-400 mt-2';
+        }
+    });
+}
+
+async function submitWritingForReview() {
+    const text = writingPracticeInput ? writingPracticeInput.value.trim() : '';
+    const words = text ? text.split(/\s+/).length : 0;
+
+    if (words < 20) {
+        alert('Por favor, escribe al menos 20 palabras antes de enviar.');
+        return;
+    }
+
+    if (submitWritingBtn) {
+        submitWritingBtn.disabled = true;
+        submitWritingBtn.innerHTML = '<span class="loader border-white/30 border-b-white w-5 h-5"></span> Analizando...';
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/writing-practice/review`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                text: text,
+                topic: writingPracticeState.topic,
+                phrasalVerbs: writingPracticeState.phrasalVerbs.map(pv => pv.verb)
+            })
+        });
+
+        if (!res.ok) throw new Error('Failed to get review');
+
+        const feedback = await res.json();
+        console.log('✅ Writing feedback:', feedback);
+
+        renderWritingFeedback(feedback);
+
+    } catch (error) {
+        console.error('❌ Error submitting writing:', error);
+        alert('Error al analizar el texto. Por favor, inténtalo de nuevo.');
+    } finally {
+        if (submitWritingBtn) {
+            submitWritingBtn.disabled = false;
+            submitWritingBtn.innerHTML = '<i data-lucide="send" class="w-5 h-5"></i><span>Submit for Review</span>';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+    }
+}
+
+function renderWritingFeedback(feedback) {
+    // Score
+    if (writingScore) {
+        writingScore.textContent = feedback.overallScore || 0;
+    }
+
+    // Grammar Errors
+    if (writingGrammarErrorsContainer && feedback.grammarErrors) {
+        if (feedback.grammarErrors.length === 0) {
+            writingGrammarErrorsContainer.innerHTML = '<p class="text-emerald-600 font-medium">¡Excelente! No se encontraron errores gramaticales.</p>';
+        } else {
+            writingGrammarErrorsContainer.innerHTML = feedback.grammarErrors.map(err => `
+                <div class="p-4 bg-rose-50 rounded-xl border border-rose-100 mb-3">
+                    <div class="flex items-start gap-3 mb-2">
+                        <span class="text-rose-500 line-through text-sm">"${err.original}"</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4 text-slate-400 shrink-0 mt-0.5"></i>
+                        <span class="text-emerald-700 font-bold">"${err.correction}"</span>
+                    </div>
+                    <p class="text-sm text-slate-600 italic">${err.explanation}</p>
+                </div>
+            `).join('');
+        }
+    }
+
+    // C1 Improvements
+    if (writingImprovementsContainer && feedback.improvements) {
+        if (feedback.improvements.length === 0) {
+            writingImprovementsContainer.innerHTML = '<p class="text-purple-600 font-medium">Tu texto ya tiene un nivel muy avanzado.</p>';
+        } else {
+            writingImprovementsContainer.innerHTML = feedback.improvements.map(imp => `
+                <div class="p-4 bg-purple-50 rounded-xl border border-purple-100 mb-3">
+                    <p class="text-slate-700 text-sm mb-2"><strong>Original:</strong> "${imp.original}"</p>
+                    <p class="text-purple-800 font-bold mb-2"><strong>Versión C1:</strong> "${imp.c1Version}"</p>
+                    <p class="text-sm text-slate-600 italic">${imp.explanation}</p>
+                </div>
+            `).join('');
+        }
+    }
+
+    // Phrasal Verb Usage
+    if (writingPhrasalUsageContent && feedback.phrasalVerbUsage) {
+        const usage = feedback.phrasalVerbUsage;
+        let html = '';
+
+        if (usage.used && usage.used.length > 0) {
+            html += `<p class="mb-2"><span class="text-emerald-600 font-bold">✓ Usados correctamente:</span> ${usage.used.join(', ')}</p>`;
+        }
+
+        if (usage.missing && usage.missing.length > 0) {
+            html += `<p class="mb-2"><span class="text-amber-700 font-bold">✗ No usados:</span> ${usage.missing.join(', ')}</p>`;
+        }
+
+        if (usage.suggestions) {
+            html += `<p class="text-sm text-slate-600 mt-3 italic">${usage.suggestions}</p>`;
+        }
+
+        writingPhrasalUsageContent.innerHTML = html || '<p class="text-slate-600">No hay información de uso de phrasal verbs.</p>';
+    }
+
+    // General Feedback
+    if (writingGeneralFeedback) {
+        writingGeneralFeedback.textContent = feedback.generalFeedback || 'No hay comentarios adicionales.';
+    }
+
+    // Show feedback section
+    if (writingFeedbackSection) {
+        writingFeedbackSection.classList.remove('hidden');
+        writingFeedbackSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+// Event Listeners for Section 9
+if (submitWritingBtn) submitWritingBtn.addEventListener('click', submitWritingForReview);
+if (newWritingPracticeBtn) newWritingPracticeBtn.addEventListener('click', loadWritingPractice);
+if (backToMenuBtn9) backToMenuBtn9.addEventListener('click', () => showView('menu'));
+
+
 // --------------------- INITIALIZATION ---------------------
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -2426,5 +2739,29 @@ window.addEventListener('DOMContentLoaded', () => {
     const appTitle = document.getElementById('app-title');
     if (appTitle) {
         appTitle.addEventListener('click', () => showView('menu'));
+    }
+
+    // Check for URL parameters (for opening Deep Dive in new tab)
+    const urlParams = new URLSearchParams(window.location.search);
+    const sectionParam = urlParams.get('section');
+    const autoloadParam = urlParams.get('autoload');
+
+    if (sectionParam === '2' && autoloadParam === 'deepdive') {
+        // Get the stored phrasal verb data
+        const storedData = localStorage.getItem('deepDiveAutoLoad');
+        if (storedData) {
+            try {
+                const data = JSON.parse(storedData);
+                // Show the Deep Dive section and load the phrasal verb
+                showView('2');
+                loadVocabularyDeepDive(data.verb, data.definition);
+                // Clean up localStorage
+                localStorage.removeItem('deepDiveAutoLoad');
+                // Clean up URL (remove parameters)
+                window.history.replaceState({}, document.title, window.location.pathname);
+            } catch (e) {
+                console.error('Error auto-loading Deep Dive:', e);
+            }
+        }
     }
 });

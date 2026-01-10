@@ -70,6 +70,7 @@ router.post('/api/translate-levels', async (req, res) => {
         }
         `;
 
+        console.log('📝 [Section 8 - Translate Levels] Prompt:', prompt);
         const result = await model.generateContent(prompt);
         let text = result.response.text();
         text = text.replace(/```json/g, '').replace(/```/g, '').trim();

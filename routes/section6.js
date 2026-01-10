@@ -69,6 +69,7 @@ router.post('/api/gemini/c1-lesson', async (req, res) => {
         Create 3 examples and 3 exercises.
         `;
 
+        console.log('📝 [Section 6 - C1 Lesson] Prompt:', prompt);
         const result = await model.generateContent(prompt);
         let text = result.response.text();
         text = text.replace(/```json/g, '').replace(/```/g, '').trim();
@@ -138,6 +139,7 @@ router.post('/api/gemini/c1-correction', async (req, res) => {
         }
         `;
 
+        console.log('📝 [Section 6 - C1 Correction] Prompt:', prompt);
         const result = await model.generateContent(prompt);
         let text = result.response.text();
         text = text.replace(/```json/g, '').replace(/```/g, '').trim();

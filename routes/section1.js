@@ -56,6 +56,58 @@ function getIgnoredTitles() {
  *                   type: array
  *                   description: Raw Notion blocks
  */
+/**
+ * Recursively fetches all nested child pages from a Notion page.
+ * Returns an array of page objects with their blocks.
+ */
+async function getAllNestedPages(blockId, ignoredTitles, depth = 0, maxDepth = 10) {
+    if (depth > maxDepth) return [];
+
+    const allPages = [];
+
+    try {
+        const response = await notion.blocks.children.list({ block_id: blockId });
+
+        for (const block of response.results) {
+            if (block.type === 'child_page') {
+                const pageTitle = block.child_page.title || 'Untitled';
+
+                // Skip ignored titles
+                if (ignoredTitles.includes(pageTitle)) {
+                    continue;
+                }
+
+                // Fetch the blocks of this page to check for headings
+                const pageBlocks = await notion.blocks.children.list({ block_id: block.id });
+
+                // Check if page has at least one heading (H1, H2, or H3)
+                const hasHeading = pageBlocks.results.some(b =>
+                    b.type === 'heading_1' ||
+                    b.type === 'heading_2' ||
+                    b.type === 'heading_3'
+                );
+
+                if (hasHeading) {
+                    // This page has content, add it to the list
+                    allPages.push({
+                        id: block.id,
+                        title: pageTitle,
+                        blocks: pageBlocks.results
+                    });
+                }
+
+                // Recursively search for nested pages within this page
+                const nestedPages = await getAllNestedPages(block.id, ignoredTitles, depth + 1, maxDepth);
+                allPages.push(...nestedPages);
+            }
+        }
+    } catch (error) {
+        console.error(`Error fetching nested pages at depth ${depth}:`, error.message);
+    }
+
+    return allPages;
+}
+
 // 1. Get Random Topic from Notion
 router.get('/api/notion/page', async (req, res) => {
     try {
@@ -63,46 +115,31 @@ router.get('/api/notion/page', async (req, res) => {
             throw new Error('NOTION_DATABASE_ID (or Root Page ID) is not set');
         }
 
-        // Fetch children of the root page (User is using a Page as a container, not a Database)
-        const response = await notion.blocks.children.list({
-            block_id: process.env.NOTION_DATABASE_ID,
-        });
-
-        // Filter for actual sub-pages
-        const pages = response.results.filter(block => block.type === 'child_page');
-
-        if (pages.length === 0) {
-            return res.status(404).json({ error: 'No sub-pages found under the provided Notion Page' });
-        }
-
-        // Pick a random page with retry logic
-        let randomPage;
-        let title = '';
-        let attempts = 0;
-        const maxAttempts = 10;
         const ignoredTitles = getIgnoredTitles();
 
-        do {
-            randomPage = pages[Math.floor(Math.random() * pages.length)];
-            title = randomPage.child_page.title || 'Untitled';
-            attempts++;
-        } while (ignoredTitles.includes(title) && attempts < maxAttempts);
+        console.log('🔍 Fetching all nested pages with content...');
 
-        if (ignoredTitles.includes(title)) {
-            return res.status(404).json({ error: 'Could not find a valid page after multiple attempts (all picked were ignored).' });
+        // Recursively fetch all nested pages that have at least one heading
+        const allPages = await getAllNestedPages(process.env.NOTION_DATABASE_ID, ignoredTitles);
+
+        if (allPages.length === 0) {
+            return res.status(404).json({
+                error: 'No pages with content (H1, H2, or H3 headings) found under the provided Notion Page'
+            });
         }
+
+        console.log(`📚 Found ${allPages.length} pages with content`);
+
+        // Pick a random page from all valid pages
+        const randomPage = allPages[Math.floor(Math.random() * allPages.length)];
+        const title = randomPage.title;
 
         // Get full page details to get URL
         const pageDetails = await notion.pages.retrieve({ page_id: randomPage.id });
         const pageUrl = pageDetails.url;
 
-        // Get page content (blocks)
-        const blocks = await notion.blocks.children.list({
-            block_id: randomPage.id,
-        });
-
-        // Extract sub-page titles from the content blocks
-        const subPageTitles = blocks.results
+        // Extract sub-page titles from the already-fetched blocks
+        const subPageTitles = randomPage.blocks
             .filter(b => b.type === 'child_page')
             .map(b => ({
                 title: b.child_page.title,
@@ -114,7 +151,7 @@ router.get('/api/notion/page', async (req, res) => {
             title: title,
             url: pageUrl,
             subPageTitles: subPageTitles,
-            content: blocks.results
+            content: randomPage.blocks
         });
 
     } catch (error) {
@@ -178,19 +215,26 @@ router.post('/api/gemini/generate', async (req, res) => {
         
         Phrasal Verbs: ${JSON.stringify(phrasalVerbs)}
         
-        IMPORTANT: Return ONLY a valid JSON object with no markdown formatting or backticks.
+        IMPORTANT RULES:
+        1. Return ONLY a valid JSON object with no markdown formatting or backticks.
+        2. For "fill_in_blank" exercises: The question MUST be a complete sentence with blanks marked using underscores (______). 
+           Example: "She ______ (to give up) smoking last year."
+           DO NOT write general instructions like "Complete the sentences..." - each question must BE the actual sentence to complete.
+        3. For "multiple_choice" exercises: Include 4 options (A, B, C, D) with the question.
+        4. Each exercise must be a standalone, complete exercise that can be answered directly.
+        
         The JSON structure must be:
         {
             "b2": [
-                { "question": "Question text...", "type": "fill_in_blank" },
-                { "question": "Question text...", "type": "multiple_choice", "options": ["A", "B", "C"] }
+                { "question": "The company had to ______ (shut down) due to the crisis.", "type": "fill_in_blank" },
+                { "question": "What is the best synonym for 'accomplish'?", "type": "multiple_choice", "options": ["Achieve", "Avoid", "Abandon", "Accept"] }
             ],
             "c1": [
-                { "question": "Question text...", "type": "fill_in_blank" },
-                { "question": "Question text...", "type": "multiple_choice", "options": ["A", "B", "C"] }
+                { "question": "Had it not been for his perseverance, he ______ (give up) long ago.", "type": "fill_in_blank" },
+                { "question": "Which sentence demonstrates proper use of inversion?", "type": "multiple_choice", "options": ["Never have I seen such a thing.", "I never have seen such a thing.", "Have I never seen such a thing.", "Such a thing I have never seen."] }
             ]
         }
-        Create 3 exercises for each level.
+        Create 3 exercises for each level. Mix fill_in_blank and multiple_choice types.
         `;
         console.log('Gemini Prompt:', prompt);
         const result = await model.generateContent(prompt);
@@ -275,6 +319,7 @@ router.post('/api/gemini/correct', async (req, res) => {
         - Return ONLY valid JSON, no markdown formatting
         `;
 
+        console.log('📝 [Section 1 - Correct] Prompt:', prompt);
         const result = await model.generateContent(prompt);
         const response = await result.response;
         const text = response.text();

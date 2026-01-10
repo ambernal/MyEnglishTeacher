@@ -90,6 +90,7 @@ router.post('/api/gemini/vocabulary-dive', async (req, res) => {
         }
         `;
 
+        console.log('📝 [Section 2 - Vocabulary Dive] Prompt:', prompt);
         const result = await model.generateContent(prompt);
         const response = await result.response;
         let text = response.text();
@@ -160,6 +161,7 @@ router.post('/api/gemini/refine-sentence', async (req, res) => {
         }
         `;
 
+        console.log('📝 [Section 2 - Refine Sentence] Prompt:', prompt);
         const result = await model.generateContent(prompt);
         const response = await result.response;
         let text = response.text();

@@ -151,6 +151,7 @@ La estructura JSON debe ser un array con un objeto por cada frase:
     ...
 ]`;
 
+        console.log('📝 [Section 3 - Grammar Correction] Prompt:', prompt);
         const result = await model.generateContent(prompt);
         const response = await result.response;
         let text = response.text();

@@ -41,6 +41,7 @@ router.post('/api/stories/start', async (req, res) => {
         }
         `;
 
+        console.log('📝 [Section 7 - Story Start] Prompt:', prompt);
         const result = await model.generateContent(prompt);
         let text = result.response.text();
         text = text.replace(/```json/g, '').replace(/```/g, '').trim();
@@ -129,6 +130,7 @@ router.post('/api/stories/continue', async (req, res) => {
         }
         `;
 
+        console.log('📝 [Section 7 - Story Continue] Prompt:', prompt);
         const result = await model.generateContent(prompt);
         let text = result.response.text();
         text = text.replace(/```json/g, '').replace(/```/g, '').trim();

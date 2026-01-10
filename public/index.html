@@ -765,22 +765,49 @@
                     </div>
 
                     <!-- Word Selection Mode Toggle -->
-                    <div class="mb-8 flex gap-4">
+                    <div class="mb-8 flex flex-wrap gap-3">
                         <button id="mode-gemini-btn"
-                            class="flex-1 px-6 py-3 rounded-xl bg-brand-600 text-white font-bold transition-all shadow-md">
-                            <i data-lucide="sparkles" class="w-5 h-5 inline mr-2"></i>
-                            Palabra de Gemini
+                            class="flex-1 min-w-[140px] px-4 py-3 rounded-xl bg-brand-600 text-white font-bold transition-all shadow-md flex items-center justify-center gap-2">
+                            <i data-lucide="sparkles" class="w-5 h-5"></i>
+                            <span>Gemini Random</span>
+                        </button>
+                        <button id="mode-custom-btn"
+                            class="flex-1 min-w-[140px] px-4 py-3 rounded-xl bg-white border-2 border-slate-200 text-slate-600 font-bold transition-all hover:border-brand-300 flex items-center justify-center gap-2">
+                            <i data-lucide="pencil" class="w-5 h-5"></i>
+                            <span>Mi Palabra</span>
                         </button>
                         <button id="mode-list-btn"
-                            class="flex-1 px-6 py-3 rounded-xl bg-white border-2 border-slate-200 text-slate-600 font-bold transition-all hover:border-brand-300">
-                            <i data-lucide="list" class="w-5 h-5 inline mr-2"></i>
-                            Elegir de Lista
+                            class="flex-1 min-w-[140px] px-4 py-3 rounded-xl bg-white border-2 border-slate-200 text-slate-600 font-bold transition-all hover:border-brand-300 flex items-center justify-center gap-2">
+                            <i data-lucide="list" class="w-5 h-5"></i>
+                            <span>Guardadas</span>
                         </button>
+                    </div>
+
+                    <!-- Custom Word Input (Hidden by default) -->
+                    <div id="custom-word-container" class="hidden mb-8">
+                        <div class="p-6 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl border-2 border-emerald-200">
+                            <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                                <i data-lucide="edit-3" class="w-5 h-5 text-emerald-600"></i>
+                                Escribe la palabra que quieres practicar
+                            </h3>
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                <input type="text" id="custom-word-input"
+                                    class="flex-1 px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-brand-500 focus:ring-0 text-slate-800 font-medium text-lg placeholder:text-slate-400 outline-none transition-all"
+                                    placeholder="e.g. thorough, colonel, worcestershire..."
+                                    autocomplete="off">
+                                <button id="custom-word-submit-btn"
+                                    class="px-6 py-3 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 transition-all shadow-md flex items-center gap-2 whitespace-nowrap">
+                                    <i data-lucide="check" class="w-5 h-5"></i>
+                                    <span>Practicar</span>
+                                </button>
+                            </div>
+                            <p class="text-sm text-emerald-700 mt-3">💡 Gemini generará la pronunciación IPA y consejos para tu palabra.</p>
+                        </div>
                     </div>
 
                     <!-- Word List (Hidden by default) -->
                     <div id="word-list-container" class="hidden mb-8">
-                        <h3 class="text-lg font-bold text-slate-900 mb-4">Selecciona una palabra:</h3>
+                        <h3 class="text-lg font-bold text-slate-900 mb-4">Selecciona una palabra guardada:</h3>
                         <div id="word-list-grid"
                             class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-96 overflow-y-auto p-2">
                             <!-- Words will be rendered here -->
@@ -1208,6 +1235,136 @@
 
                 <div class="mt-10 flex justify-end">
                     <button id="back-to-menu-btn-8"
+                        class="px-6 py-3 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors flex items-center gap-2">
+                        <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                        <span>Menú Principal</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- SECTION 9: WRITING PRACTICE WITH PHRASAL VERBS -->
+            <section id="section-writing-practice-view" class="hidden clean-card rounded-3xl p-8 md:p-10 relative">
+                <div class="flex items-center gap-4 mb-8 pb-6 border-b border-slate-100">
+                    <div class="p-3 bg-brand-50 rounded-xl text-brand-600">
+                        <i data-lucide="pen-tool" class="w-8 h-8"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-display text-2xl font-bold text-slate-900">Writing Practice</h2>
+                        <p class="text-slate-500">Escribe un texto usando los phrasal verbs y recibe feedback de nivel C1.</p>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div id="writing-practice-loader" class="hidden flex flex-col items-center justify-center py-12">
+                    <span class="loader mb-3"></span>
+                    <span class="text-sm text-slate-500 font-medium">Cargando tema y phrasal verbs...</span>
+                </div>
+
+                <!-- Content Container -->
+                <div id="writing-practice-content" class="hidden space-y-8">
+                    <!-- Topic Display -->
+                    <div class="p-6 bg-gradient-to-br from-brand-50 to-purple-50 rounded-2xl border-2 border-brand-200">
+                        <p class="text-xs font-bold text-brand-600 uppercase tracking-wider mb-2">📝 Tema de escritura:</p>
+                        <p id="writing-topic-text" class="text-xl font-bold text-slate-900 font-display"></p>
+                    </div>
+
+                    <!-- Phrasal Verbs Section -->
+                    <div>
+                        <h3 class="text-lg font-display font-bold text-slate-900 mb-4 flex items-center gap-2">
+                            <i data-lucide="layers" class="text-brand-500 w-5 h-5"></i>
+                            Usa estos phrasal verbs en tu texto:
+                        </h3>
+                        <div id="writing-phrasal-verbs-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- Phrasal verbs cards will be rendered here -->
+                        </div>
+                    </div>
+
+                    <!-- Writing Area -->
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide">
+                            Tu texto (mínimo 50 palabras):
+                        </label>
+                        <textarea id="writing-practice-input" rows="8"
+                            class="input-clean w-full p-4 rounded-xl text-slate-800 placeholder-slate-400 font-medium"
+                            placeholder="Write your text here using the phrasal verbs above..."></textarea>
+                        <p id="writing-word-count" class="text-right text-sm text-slate-400 mt-2">0 words</p>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="flex justify-end">
+                        <button id="submit-writing-btn"
+                            class="px-10 py-4 rounded-xl bg-brand-600 text-white font-bold hover:bg-brand-700 transition-all shadow-xl flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <i data-lucide="send" class="w-5 h-5"></i>
+                            <span>Submit for Review</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Feedback Results (Hidden initially) -->
+                <div id="writing-feedback-section" class="hidden space-y-8 mt-8 pt-8 border-t border-slate-200">
+                    <!-- Overall Score -->
+                    <div class="text-center">
+                        <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-brand-100 text-brand-600 mb-4 ring-4 ring-brand-50">
+                            <span id="writing-score" class="text-3xl font-bold">85</span>
+                        </div>
+                        <p class="text-slate-500 font-medium">Puntuación General</p>
+                    </div>
+
+                    <!-- Grammar Errors -->
+                    <div id="writing-grammar-errors" class="space-y-4">
+                        <h3 class="flex items-center gap-2 text-xl font-bold text-rose-600 mb-4">
+                            <i data-lucide="alert-circle" class="w-6 h-6"></i>
+                            Errores Gramaticales
+                        </h3>
+                        <div id="writing-grammar-errors-container">
+                            <!-- Grammar errors will be rendered here -->
+                        </div>
+                    </div>
+
+                    <!-- C1 Improvements -->
+                    <div id="writing-improvements" class="space-y-4">
+                        <h3 class="flex items-center gap-2 text-xl font-bold text-purple-600 mb-4">
+                            <i data-lucide="trending-up" class="w-6 h-6"></i>
+                            Mejoras C1
+                        </h3>
+                        <div id="writing-improvements-container">
+                            <!-- Improvements will be rendered here -->
+                        </div>
+                    </div>
+
+                    <!-- Phrasal Verb Usage -->
+                    <div id="writing-phrasal-usage" class="p-6 bg-amber-50 rounded-2xl border border-amber-200">
+                        <h3 class="flex items-center gap-2 text-lg font-bold text-amber-800 mb-4">
+                            <i data-lucide="check-circle" class="w-5 h-5"></i>
+                            Uso de Phrasal Verbs
+                        </h3>
+                        <div id="writing-phrasal-usage-content">
+                            <!-- Phrasal verb usage feedback -->
+                        </div>
+                    </div>
+
+                    <!-- General Feedback -->
+                    <div class="p-6 bg-emerald-50 rounded-2xl border border-emerald-200">
+                        <h3 class="flex items-center gap-2 text-lg font-bold text-emerald-800 mb-3">
+                            <i data-lucide="message-circle" class="w-5 h-5"></i>
+                            Comentario General
+                        </h3>
+                        <p id="writing-general-feedback" class="text-slate-700 leading-relaxed"></p>
+                    </div>
+
+                    <!-- Try Again Button -->
+                    <div class="flex justify-center">
+                        <button id="new-writing-practice-btn"
+                            class="px-8 py-3 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors flex items-center gap-2">
+                            <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                            Nueva Práctica
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Back to Menu -->
+                <div class="mt-10 flex justify-end">
+                    <button id="back-to-menu-btn-9"
                         class="px-6 py-3 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors flex items-center gap-2">
                         <i data-lucide="arrow-left" class="w-5 h-5"></i>
                         <span>Menú Principal</span>
