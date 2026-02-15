@@ -7,6 +7,8 @@ const { genAI } = require('../utils/clients');
 // Configuration
 // Correct path: routes -> server root -> ControlPage
 const SAVED_C1_LESSONS_PATH = path.join(__dirname, '../ControlPage', 'saved_c1_lessons.json');
+const C1_LESSON_HISTORY_PATH = path.join(__dirname, '../ControlPage', 'c1_lesson_history.json');
+const MAX_HISTORY_SIZE = 30; // Number of past topics to remember before allowing repeats
 
 // Ensure Saved C1 Lessons file exists
 if (!fs.existsSync(SAVED_C1_LESSONS_PATH)) {
@@ -14,6 +16,15 @@ if (!fs.existsSync(SAVED_C1_LESSONS_PATH)) {
         fs.writeFileSync(SAVED_C1_LESSONS_PATH, JSON.stringify([], null, 4));
     } catch (e) {
         console.error('Could not create saved C1 lessons file:', e);
+    }
+}
+
+// Ensure C1 Lesson History file exists
+if (!fs.existsSync(C1_LESSON_HISTORY_PATH)) {
+    try {
+        fs.writeFileSync(C1_LESSON_HISTORY_PATH, JSON.stringify([], null, 4));
+    } catch (e) {
+        console.error('Could not create C1 lesson history file:', e);
     }
 }
 
@@ -48,9 +59,25 @@ router.post('/api/gemini/c1-lesson', async (req, res) => {
     try {
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-        const prompt = `Create a C1-level English lesson on a specific advanced grammar or vocabulary topic (e.g., Inversion, Cleft Sentences, Mixed Conditionals, Subjunctive, Advanced Collocations).
+        // Read history of past topics to avoid repetition
+        let history = [];
+        if (fs.existsSync(C1_LESSON_HISTORY_PATH)) {
+            try {
+                history = JSON.parse(fs.readFileSync(C1_LESSON_HISTORY_PATH, 'utf8'));
+            } catch (e) {
+                console.error('Error reading C1 lesson history:', e);
+                history = [];
+            }
+        }
 
-        Topic: Choose a random advanced topic suitable for C1 students.
+        // Build exclusion list for the prompt
+        const excludeTopics = history.length > 0
+            ? `\n\nIMPORTANT: Do NOT generate lessons about these topics that have already been covered:\n- ${history.join('\n- ')}\n\nChoose a COMPLETELY DIFFERENT topic from the ones listed above.`
+            : '';
+
+        const prompt = `Create a C1-level English lesson on a specific advanced grammar or vocabulary topic (e.g., Inversion, Cleft Sentences, Mixed Conditionals, Subjunctive, Advanced Collocations, Ellipsis, Fronting, Nominalization, Hedging Language, Discourse Markers, Binomial Expressions, Participle Clauses, etc.).
+
+        Topic: Choose a random advanced topic suitable for C1 students.${excludeTopics}
 
         Output JSON Requirements:
         {
@@ -74,7 +101,26 @@ router.post('/api/gemini/c1-lesson', async (req, res) => {
         let text = result.response.text();
         text = text.replace(/```json/g, '').replace(/```/g, '').trim();
 
-        res.json(JSON.parse(text));
+        const lessonData = JSON.parse(text);
+
+        // Save the new topic to history
+        if (lessonData.topic) {
+            history.push(lessonData.topic);
+
+            // Keep only the last MAX_HISTORY_SIZE topics
+            if (history.length > MAX_HISTORY_SIZE) {
+                history = history.slice(-MAX_HISTORY_SIZE);
+            }
+
+            try {
+                fs.writeFileSync(C1_LESSON_HISTORY_PATH, JSON.stringify(history, null, 4));
+                console.log(`📚 [Section 6] Topic saved to history: "${lessonData.topic}" (${history.length}/${MAX_HISTORY_SIZE})`);
+            } catch (e) {
+                console.error('Error saving C1 lesson history:', e);
+            }
+        }
+
+        res.json(lessonData);
 
     } catch (error) {
         console.error('C1 Lesson Error:', error);

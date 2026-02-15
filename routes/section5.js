@@ -305,9 +305,40 @@ router.post('/api/pronunciation/analyze', async (req, res) => {
 
         const response = await result.response;
         let text = response.text();
+
+        // Robust cleaning of the response text
         text = text.replace(/```json/g, '').replace(/```/g, '').trim();
 
-        res.json({ analysis: text });
+        // Handle "Bad control character" by escaping problematic characters
+        // This regex targets characters 0-31 except space, tab, newline, carriage return
+        // but often Gemini sends literal newlines inside strings.
+        // Let's try to parse it safely first.
+        try {
+            const analysis = JSON.parse(text);
+            res.json({ analysis });
+        } catch (parseError) {
+            console.error('Initial parse failed, attempting deep clean:', parseError.message);
+            // More aggressive cleaning: replace unescaped newlines inside strings
+            // This is tricky but a common hack for Gemini responses
+            let cleanedText = text.replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/\t/g, "\\t");
+
+            // Wait, we only want to escape newlines inside quotes. 
+            // Simple approach: try to fix only the most common issues
+            try {
+                // Remove actual control characters
+                const santizedText = text.replace(/[\u0000-\u001F\u007F-\u009F]/g, (match) => {
+                    if (match === '\n') return '\\n';
+                    if (match === '\r') return '\\r';
+                    if (match === '\t') return '\\t';
+                    return '';
+                });
+                const analysis = JSON.parse(santizedText);
+                res.json({ analysis });
+            } catch (secondError) {
+                console.error('Final parse failed:', secondError.message);
+                throw secondError;
+            }
+        }
 
     } catch (error) {
         console.error('Pronunciation Analysis Error:', error);

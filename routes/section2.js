@@ -3,6 +3,45 @@ const router = express.Router();
 const { genAI } = require('../utils/clients');
 
 /**
+ * Helper function to clean and parse JSON from Gemini response
+ * Handles common issues like trailing commas, unescaped characters, etc.
+ */
+function cleanAndParseJSON(text) {
+    // Remove markdown code blocks if present
+    let cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
+
+    // Remove trailing commas before } or ]
+    cleaned = cleaned.replace(/,(\s*[}\]])/g, '$1');
+
+    // Try to fix unescaped newlines in strings
+    cleaned = cleaned.replace(/(?<!\\)\\n/g, '\\n');
+
+    // Attempt to parse
+    try {
+        return JSON.parse(cleaned);
+    } catch (firstError) {
+        console.error('First JSON parse attempt failed:', firstError.message);
+
+        // Try more aggressive cleaning - remove control characters
+        cleaned = cleaned.replace(/[\x00-\x1F\x7F]/g, (char) => {
+            if (char === '\n' || char === '\r' || char === '\t') {
+                return char; // Keep these
+            }
+            return ''; // Remove other control characters
+        });
+
+        // Try again
+        try {
+            return JSON.parse(cleaned);
+        } catch (secondError) {
+            console.error('Second JSON parse attempt failed:', secondError.message);
+            console.error('Problematic text (first 500 chars):', cleaned.substring(0, 500));
+            throw new Error(`Failed to parse JSON response: ${secondError.message}`);
+        }
+    }
+}
+
+/**
  * @swagger
  * /api/gemini/vocabulary-dive:
  *   post:
@@ -93,10 +132,9 @@ router.post('/api/gemini/vocabulary-dive', async (req, res) => {
         console.log('📝 [Section 2 - Vocabulary Dive] Prompt:', prompt);
         const result = await model.generateContent(prompt);
         const response = await result.response;
-        let text = response.text();
-        text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+        const text = response.text();
 
-        res.json(JSON.parse(text));
+        res.json(cleanAndParseJSON(text));
 
     } catch (error) {
         console.error('Vocabulary Dive Error:', error);
@@ -164,10 +202,9 @@ router.post('/api/gemini/refine-sentence', async (req, res) => {
         console.log('📝 [Section 2 - Refine Sentence] Prompt:', prompt);
         const result = await model.generateContent(prompt);
         const response = await result.response;
-        let text = response.text();
-        text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+        const text = response.text();
 
-        res.json(JSON.parse(text));
+        res.json(cleanAndParseJSON(text));
 
     } catch (error) {
         console.error('Refine Sentence Error:', error);

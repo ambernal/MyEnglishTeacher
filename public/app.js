@@ -1309,15 +1309,9 @@ async function analyzePronunciation() {
             throw new Error(data.error);
         }
 
-        let analysis = {};
-        try {
-            if (!data.analysis) throw new Error('No analysis data received');
-            let cleanText = data.analysis.replace(/```json/g, '').replace(/```/g, '').trim();
-            analysis = JSON.parse(cleanText);
-        } catch (e) {
-            console.error('❌ Failed to parse analysis JSON', e);
-            alert('Error parsing analysis: ' + e.message);
-            return;
+        const analysis = data.analysis;
+        if (!analysis) {
+            throw new Error('No analysis data received');
         }
 
         state.pronunciationFeedback = analysis;
