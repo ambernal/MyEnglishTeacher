@@ -57,7 +57,10 @@ if (!fs.existsSync(C1_LESSON_HISTORY_PATH)) {
 // 13. C1 Lesson Generation
 router.post('/api/gemini/c1-lesson', async (req, res) => {
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const model = genAI.getGenerativeModel({
+            model: "gemini-2.5-flash",
+            generationConfig: { responseMimeType: "application/json" }
+        });
 
         // Read history of past topics to avoid repetition
         let history = [];
@@ -94,12 +97,16 @@ router.post('/api/gemini/c1-lesson', async (req, res) => {
             ]
         }
         Create 3 examples and 3 exercises.
+        IMPORTANT: Return ONLY valid JSON. Do not include unescaped newlines or control characters in strings.
         `;
 
         console.log('📝 [Section 6 - C1 Lesson] Prompt:', prompt);
         const result = await model.generateContent(prompt);
         let text = result.response.text();
         text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+
+        // Sanitize control characters that might break JSON parsing
+        text = text.replace(/[\u0000-\u001F]+/g, " ");
 
         const lessonData = JSON.parse(text);
 
@@ -169,7 +176,10 @@ router.post('/api/gemini/c1-lesson', async (req, res) => {
 router.post('/api/gemini/c1-correction', async (req, res) => {
     try {
         const { topic, exercises, userAnswers } = req.body;
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const model = genAI.getGenerativeModel({
+            model: "gemini-2.5-flash",
+            generationConfig: { responseMimeType: "application/json" }
+        });
 
         const prompt = `You are a C1 English teacher. Correct the user's answers for the topic: "${topic}".
 
@@ -183,12 +193,16 @@ router.post('/api/gemini/c1-correction', async (req, res) => {
             ],
             "overallFeedback": "General feedback on the user's performance."
         }
+        IMPORTANT: Return ONLY valid JSON. Do not include unescaped newlines or control characters in strings.
         `;
 
         console.log('📝 [Section 6 - C1 Correction] Prompt:', prompt);
         const result = await model.generateContent(prompt);
         let text = result.response.text();
         text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+
+        // Sanitize control characters that might break JSON parsing
+        text = text.replace(/[\u0000-\u001F]+/g, " ");
 
         res.json(JSON.parse(text));
 
